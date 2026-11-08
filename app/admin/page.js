@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check, ImagePlus, LogOut, MessageCircle, PackagePlus, RefreshCw, ShieldCheck, Trash2, Truck, Users } from 'lucide-react';
+import { nextOrderStatuses } from '@/lib/order-workflow';
+import { ArrowLeft, Check, ImagePlus, LogOut, MessageCircle, PackagePlus, Pencil, RefreshCw, ShieldCheck, Trash2, Truck, Users, X } from 'lucide-react';
 
 const initialForm = {
   name: '',
@@ -10,6 +11,8 @@ const initialForm = {
   price: '',
   oldPrice: '',
   image: '',
+  video: '',
+  description: '',
   badge: '',
   stock: '10',
 };
@@ -21,15 +24,18 @@ const categories = [
   'Gadget',
   'Wall Decor & Mirrors',
 ];
-const orderStatuses = ['Placed', 'Confirmed', 'Processing', 'Shipped', 'Out for delivery', 'Delivered', 'Cancelled'];
-
 export default function AdminPanel() {
   const [products, setProducts] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [replyDrafts, setReplyDrafts] = useState({});
   const [formData, setFormData] = useState(initialForm);
+  const [editingProductId, setEditingProductId] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [publishingSamples, setPublishingSamples] = useState(false);
+  const [sampleStock, setSampleStock] = useState('10');
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
@@ -63,6 +69,7 @@ export default function AdminPanel() {
       }
       setCustomers(overview.customers);
       setOrders(overview.orders);
+      setReviews(overview.reviews || []);
       setConversations(support.conversations);
       setError('');
     } catch (dataError) {
@@ -110,6 +117,7 @@ export default function AdminPanel() {
         if (!active) return;
         setCustomers(overview.customers);
         setOrders(overview.orders);
+        setReviews(overview.reviews || []);
         setConversations(support.conversations);
         setError('');
       })
@@ -123,9 +131,12 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (!authenticated) return undefined;
-    const timer = window.setInterval(() => void fetchAdminData(), 15000);
+    const timer = window.setInterval(() => {
+      void fetchAdminData();
+      void fetchProducts();
+    }, 15000);
     return () => window.clearInterval(timer);
-  }, [authenticated, fetchAdminData]);
+  }, [authenticated, fetchAdminData, fetchProducts]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -161,9 +172,9 @@ export default function AdminPanel() {
 
     try {
       const response = await fetch('/api/products', {
-        method: 'POST',
+        method: editingProductId ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(editingProductId ? { ...formData, id: editingProductId } : formData),
       });
       const result = await response.json();
       if (response.status === 401) {
@@ -175,6 +186,12 @@ export default function AdminPanel() {
         throw new Error(result.error || 'Product could not be published.');
       }
       setFormData(initialForm);
+      setEditingProductId('');
+      if (editingProductId) {
+        setMessage(`${result.data.name} was updated in your store.`);
+        await fetchProducts();
+        return;
+      }
       const pushInfo = result.notification?.configured
         ? ` Browser alerts sent to ${result.notification.sent} subscribed device(s).`
         : ' An in-app new-product notice is available; browser alerts need VAPID setup.';
@@ -185,6 +202,96 @@ export default function AdminPanel() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const uploadProductImage = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setError('');
+    setMessage('');
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Product images must be smaller than 5 MB.');
+      event.target.value = '';
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const uploadData = new FormData();
+      uploadData.append('image', file);
+      const response = await fetch('/api/admin/media', { method: 'POST', body: uploadData });
+      const result = await response.json();
+      if (response.status === 401) {
+        setAuthenticated(false);
+        setError('Your admin session expired. Please sign in again.');
+        return;
+      }
+      if (!response.ok || !result.success) throw new Error(result.error || 'Product image could not be uploaded.');
+      setFormData((current) => ({ ...current, image: result.image }));
+      setMessage('Product image uploaded. Save the product to publish the change.');
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : 'Product image could not be uploaded.');
+    } finally {
+      setUploadingImage(false);
+      event.target.value = '';
+    }
+  };
+
+  const publishSampleProducts = async () => {
+    const stock = Number(sampleStock);
+    if (!Number.isInteger(stock) || stock < 1 || stock > 10000) {
+      setError('Choose a stock quantity from 1 to 10,000 for each preview product.');
+      return;
+    }
+    const confirmed = window.confirm(
+      `This creates six live, orderable listings with the shown sample prices and ${stock} unit(s) per product. Verify you can fulfill these products at these prices and stock levels before continuing.`,
+    );
+    if (!confirmed) return;
+
+    setPublishingSamples(true);
+    setError('');
+    setMessage('');
+    try {
+      const response = await fetch('/api/admin/products/seed-samples', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stock }),
+      });
+      const result = await response.json();
+      if (response.status === 401) {
+        setAuthenticated(false);
+        setError('Your admin session expired. Please sign in again.');
+        return;
+      }
+      if (!response.ok || !result.success) throw new Error(result.error || 'Preview products could not be published.');
+      await fetchProducts();
+      setMessage(`${result.count} sample products are now live and orderable. Review each price and stock level before sharing the store.`);
+    } catch (seedError) {
+      setError(seedError instanceof Error ? seedError.message : 'Preview products could not be published.');
+    } finally {
+      setPublishingSamples(false);
+    }
+  };
+
+  const editProduct = (product) => {
+    setEditingProductId(product._id);
+    setFormData({
+      name: product.name,
+      category: product.category,
+      price: String(product.price),
+      oldPrice: product.oldPrice == null ? '' : String(product.oldPrice),
+      image: product.image,
+      video: product.video || '',
+      description: product.description || '',
+      badge: product.badge || '',
+      stock: String(product.stock ?? 10),
+    });
+    document.getElementById('product-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const cancelProductEdit = () => {
+    setEditingProductId('');
+    setFormData(initialForm);
   };
 
   const deleteProduct = async (product) => {
@@ -219,6 +326,7 @@ export default function AdminPanel() {
       if (!response.ok) throw new Error('Could not end the admin session.');
       setAuthenticated(false);
       setProducts([]);
+      setReviews([]);
       setMessage('');
       setError('');
     } catch (logoutError) {
@@ -246,6 +354,29 @@ export default function AdminPanel() {
       setMessage(`Order ${result.order.orderNumber} updated to ${status}.`);
     } catch (statusError) {
       setError(statusError instanceof Error ? statusError.message : 'Order status could not be updated.');
+    }
+  };
+
+  const verifyOrderPayment = async (orderId) => {
+    setError('');
+    setMessage('');
+    try {
+      const response = await fetch('/api/admin/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, action: 'verify-payment' }),
+      });
+      const result = await response.json();
+      if (response.status === 401) {
+        setAuthenticated(false);
+        setError('Your admin session expired. Please sign in again.');
+        return;
+      }
+      if (!response.ok || !result.success) throw new Error(result.error || 'Payment could not be verified.');
+      setOrders((current) => current.map((order) => order._id === orderId ? result.order : order));
+      setMessage(`Payment for ${result.order.orderNumber} marked as verified.`);
+    } catch (verificationError) {
+      setError(verificationError instanceof Error ? verificationError.message : 'Payment could not be verified.');
     }
   };
 
@@ -285,6 +416,7 @@ export default function AdminPanel() {
   };
 
   const fieldClass = 'mt-2 w-full rounded-xl border border-[#e5e2dc] bg-white px-4 py-3 text-sm text-[#24352c] outline-none transition placeholder:text-slate-400 focus:border-[#58745d] focus:ring-4 focus:ring-[#58745d]/10';
+  const productCategories = [...new Set([...categories, ...products.map((product) => product.category), formData.category].filter(Boolean))];
 
   if (checkingSession) {
     return (
@@ -373,12 +505,12 @@ export default function AdminPanel() {
         {error && <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
         {message && <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{message}</p>}
 
-        <section className="rounded-3xl border border-[#e9e6df] bg-white p-5 shadow-sm sm:p-8">
+        <section id="product-form" className="rounded-3xl border border-[#e9e6df] bg-white p-5 shadow-sm sm:p-8">
           <div className="mb-6 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf0e8] text-[#315b45]"><PackagePlus size={19} /></div>
             <div>
-              <h2 className="text-lg font-bold">Add a product</h2>
-              <p className="mt-0.5 text-xs text-slate-500">It will appear in your live store as soon as it is published.</p>
+              <h2 className="text-lg font-bold">{editingProductId ? 'Edit product' : 'Add a product'}</h2>
+              <p className="mt-0.5 text-xs text-slate-500">{editingProductId ? 'Update the product information and live stock.' : 'It will appear in your live store as soon as it is published.'}</p>
             </div>
           </div>
           <form onSubmit={handleSubmit} className="grid gap-x-5 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -389,7 +521,7 @@ export default function AdminPanel() {
             <label className="text-xs font-semibold text-[#47564b]">
               Category
               <select value={formData.category} onChange={(event) => setFormData({ ...formData, category: event.target.value })} className={fieldClass}>
-                {categories.map((category) => <option key={category} value={category}>{category}</option>)}
+                {productCategories.map((category) => <option key={category} value={category}>{category}</option>)}
               </select>
             </label>
             <label className="text-xs font-semibold text-[#47564b]">
@@ -402,7 +534,12 @@ export default function AdminPanel() {
             </label>
             <label className="text-xs font-semibold text-[#47564b]">
               Product image URL
-              <input type="url" required value={formData.image} onChange={(event) => setFormData({ ...formData, image: event.target.value })} className={fieldClass} placeholder="https://example.com/product.jpg" />
+              <input type="text" inputMode="url" required value={formData.image} onChange={(event) => setFormData({ ...formData, image: event.target.value })} className={fieldClass} placeholder="https://example.com/product.jpg or /api/media/…" />
+            </label>
+            <label className="text-xs font-semibold text-[#47564b]">
+              Or upload an image
+              <input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploadingImage} onChange={uploadProductImage} className={`${fieldClass} file:mr-3 file:rounded-full file:border-0 file:bg-[#eaf0e8] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-[#315b45]`} />
+              <span className="mt-1 block text-[10px] font-normal text-slate-500">{uploadingImage ? 'Uploading image…' : 'JPEG, PNG or WebP · maximum 5 MB · stored securely with MongoDB'}</span>
             </label>
             <label className="text-xs font-semibold text-[#47564b]">
               Stock quantity
@@ -412,6 +549,14 @@ export default function AdminPanel() {
               Product badge (optional)
               <input maxLength={40} value={formData.badge} onChange={(event) => setFormData({ ...formData, badge: event.target.value })} className={fieldClass} placeholder="New arrival / Best seller" />
             </label>
+            <label className="text-xs font-semibold text-[#47564b]">
+              Product video link (optional)
+              <input type="url" inputMode="url" value={formData.video} onChange={(event) => setFormData({ ...formData, video: event.target.value })} className={fieldClass} placeholder="YouTube, Vimeo or HTTPS video URL" />
+            </label>
+            <label className="text-xs font-semibold text-[#47564b] sm:col-span-2 lg:col-span-3">
+              Product information (optional)
+              <textarea maxLength={2000} rows={4} value={formData.description} onChange={(event) => setFormData({ ...formData, description: event.target.value })} className={fieldClass} placeholder="Describe the product accurately: materials, dimensions, care, what's included…" />
+            </label>
             {formData.image && (
               <div className="flex items-center gap-3 rounded-xl border border-[#e9e6df] bg-[#faf9f6] p-3 lg:col-span-1">
                 <ImagePlus size={18} className="shrink-0 text-[#829078]" />
@@ -420,12 +565,54 @@ export default function AdminPanel() {
               </div>
             )}
             <div className="sm:col-span-2 lg:col-span-3">
-              <button disabled={saving} type="submit" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#24352c] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#315b45] disabled:cursor-wait disabled:opacity-60 sm:w-auto">
-                {saving ? <RefreshCw size={16} className="animate-spin" /> : <PackagePlus size={16} />}
-                {saving ? 'Publishing product…' : 'Publish product'}
+              <button disabled={saving || uploadingImage} type="submit" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#24352c] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#315b45] disabled:cursor-wait disabled:opacity-60 sm:w-auto">
+                {saving ? <RefreshCw size={16} className="animate-spin" /> : editingProductId ? <Check size={16} /> : <PackagePlus size={16} />}
+                {saving ? (editingProductId ? 'Saving changes…' : 'Publishing product…') : editingProductId ? 'Save changes' : 'Publish product'}
               </button>
+              {editingProductId && <button type="button" disabled={saving} onClick={cancelProductEdit} className="ml-2 inline-flex items-center gap-2 rounded-xl border border-[#e5e2dc] px-5 py-3.5 text-sm font-semibold text-slate-600 transition hover:bg-[#faf9f6] disabled:opacity-50"><X size={15} /> Cancel edit</button>}
             </div>
           </form>
+        </section>
+
+        {products.length === 0 && (
+          <section className="rounded-3xl border border-[#e9e6df] bg-white p-5 shadow-sm sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#829078]">Ready-to-publish preview catalog</p>
+            <h2 className="mt-2 font-serif text-2xl text-[#24352c]">Make the six sample listings orderable</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">This creates six database-backed products using the sample prices shown in the storefront. Confirm that prices, image rights and stock match what you can actually fulfill before publishing; the listings will immediately accept orders.</p>
+            <div className="mt-4 flex flex-wrap items-end gap-3">
+              <label className="text-xs font-semibold text-[#47564b]">Available units per sample product
+                <input type="number" min="1" max="10000" step="1" value={sampleStock} onChange={(event) => setSampleStock(event.target.value)} className={fieldClass} />
+              </label>
+              <button type="button" disabled={publishingSamples} onClick={() => void publishSampleProducts()} className="inline-flex items-center gap-2 rounded-xl bg-[#315b45] px-5 py-3 text-sm font-bold text-white hover:bg-[#24352c] disabled:opacity-50">
+                {publishingSamples ? <RefreshCw size={15} className="animate-spin" /> : <PackagePlus size={15} />}
+                {publishingSamples ? 'Publishing…' : 'Publish sample listings'}
+              </button>
+            </div>
+          </section>
+        )}
+
+        <section className="overflow-hidden rounded-3xl border border-[#e9e6df] bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#efede8] px-5 py-5 sm:px-7">
+            <div>
+              <h2 className="text-lg font-bold">Verified customer reviews</h2>
+              <p className="mt-1 text-xs text-slate-500">{reviews.length} recent review(s) · refreshed with customer and order data</p>
+            </div>
+            <button type="button" onClick={() => void fetchAdminData()} className="rounded-full border border-[#e5e2dc] px-4 py-2 text-xs font-semibold text-slate-600 hover:border-[#829078]">Refresh</button>
+          </div>
+          <div className="divide-y divide-[#efede8]">
+            {reviews.length === 0 ? (
+              <p className="px-5 py-10 text-center text-sm text-slate-500">Verified product reviews will appear here after customers submit them.</p>
+            ) : reviews.map((review) => (
+              <article key={review._id} className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-7">
+                <div>
+                  <p className="text-sm font-bold text-[#24352c]">{review.productId?.name || 'Product removed'} · {review.rating}/5 stars</p>
+                  <p className="mt-1 text-xs text-slate-600">{review.comment}</p>
+                  <p className="mt-2 text-[10px] text-slate-500">{review.customerId?.name || 'Customer'} · {review.customerId?.email || 'No email'} · Verified delivered order</p>
+                </div>
+                <time className="shrink-0 text-[10px] text-slate-400">{new Date(review.createdAt).toLocaleString()}</time>
+              </article>
+            ))}
+          </div>
         </section>
 
         <section className="overflow-hidden rounded-3xl border border-[#e9e6df] bg-white shadow-sm">
@@ -467,9 +654,14 @@ export default function AdminPanel() {
                     <td className="px-4 py-4 font-semibold text-[#315b45]">৳ {product.price}</td>
                     <td className="px-4 py-4 text-slate-600">{product.stock ?? 10}</td>
                     <td className="px-5 py-4 text-right sm:px-7">
-                      <button type="button" onClick={() => void deleteProduct(product)} aria-label={`Delete ${product.name}`} className="inline-flex items-center gap-1.5 rounded-full border border-rose-100 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-50">
-                        <Trash2 size={14} /><span className="hidden sm:inline">Delete</span>
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <button type="button" onClick={() => editProduct(product)} aria-label={`Edit ${product.name}`} className="inline-flex items-center gap-1.5 rounded-full border border-[#e5e2dc] px-3 py-2 text-xs font-semibold text-[#315b45] transition hover:bg-[#eaf0e8]">
+                          <Pencil size={14} /><span className="hidden sm:inline">Edit</span>
+                        </button>
+                        <button type="button" onClick={() => void deleteProduct(product)} aria-label={`Delete ${product.name}`} className="inline-flex items-center gap-1.5 rounded-full border border-rose-100 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-50">
+                          <Trash2 size={14} /><span className="hidden sm:inline">Delete</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -513,12 +705,44 @@ export default function AdminPanel() {
                       </td>
                       <td className="px-4 py-4">
                         <ul className="space-y-1 text-xs text-slate-600">{order.items.map((item, index) => <li key={`${item.productId}-${index}`}>{item.name} × {item.quantity}</li>)}</ul>
-                        <p className="mt-2 font-bold text-[#315b45]">৳ {order.total} · COD</p>
+                        <div className="mt-2 space-y-1 text-[10px]">
+                          <p className="flex justify-between gap-3 text-slate-500"><span>Subtotal</span><span>৳ {order.subtotal ?? order.total}</span></p>
+                          <p className="flex justify-between gap-3 text-slate-500"><span>Delivery</span><span>৳ {order.deliveryFee ?? 0}</span></p>
+                          <p className="flex justify-between gap-3 text-slate-500"><span>Payment</span><span>{order.paymentMethod || 'Cash on delivery'} · {order.paymentStatus === 'paid' ? 'Paid' : order.paymentStatus === 'review' ? 'Needs review' : order.paymentStatus === 'failed' ? 'Failed' : order.paymentMethod === 'Cash on delivery' ? 'Pay on delivery' : 'Pending'}</span></p>
+                          {order.paymentReference && <p className="flex justify-between gap-3 text-slate-500"><span>TxnID</span><span className="max-w-[150px] break-all text-right">{order.paymentReference}</span></p>}
+                          <p className="flex justify-between gap-3 border-t border-[#efede8] pt-1 font-bold text-[#315b45]"><span>Total</span><span>৳ {order.total}</span></p>
+                        </div>
                       </td>
                       <td className="px-4 py-4">
-                        <select aria-label={`Update status for ${order.orderNumber}`} value={order.status} disabled={order.status === 'Delivered' || order.status === 'Cancelled'} onChange={(event) => void updateOrderStatus(order._id, event.target.value)} className="rounded-xl border border-[#e5e2dc] bg-white px-3 py-2 text-xs font-semibold text-[#24352c] outline-none focus:border-[#58745d] disabled:bg-[#f5f3ed]">
-                          {orderStatuses.map((status) => <option key={status} value={status}>{status}</option>)}
-                        </select>
+                        {(() => {
+                          const isCod = !order.paymentMethod || order.paymentMethod === 'Cash on delivery';
+                          const canCancel = isCod || order.paymentStatus !== 'paid';
+                          const allowedStatuses = (nextOrderStatuses[order.status] || []).filter((status) => (
+                            status === 'Cancelled'
+                              ? canCancel
+                              : isCod || order.paymentStatus === 'paid'
+                          ));
+                          const canVerifyPayment = order.status !== 'Cancelled' && ['pending', 'review'].includes(order.paymentStatus) && (
+                            order.paymentMethod === 'Manual bKash' ||
+                            order.paymentMethod === 'Manual Nagad' ||
+                            (order.paymentMethod === 'SSLCOMMERZ' && order.paymentStatus === 'review')
+                          );
+                          return (
+                            <div className="space-y-2">
+                              <select aria-label={`Update status for ${order.orderNumber}`} value={order.status} disabled={!allowedStatuses.length} onChange={(event) => void updateOrderStatus(order._id, event.target.value)} className="rounded-xl border border-[#e5e2dc] bg-white px-3 py-2 text-xs font-semibold text-[#24352c] outline-none focus:border-[#58745d] disabled:bg-[#f5f3ed]">
+                                {[order.status, ...allowedStatuses].map((status) => <option key={status} value={status}>{status}</option>)}
+                              </select>
+                              {canVerifyPayment && (
+                                <>
+                                  <p className="max-w-[180px] text-[10px] leading-4 text-slate-500">Check the wallet or gateway transaction before confirming.</p>
+                                  <button type="button" onClick={() => void verifyOrderPayment(order._id)} className="block rounded-lg bg-[#315b45] px-3 py-2 text-[10px] font-bold text-white hover:bg-[#24352c]">Confirm payment</button>
+                                </>
+                              )}
+                              {order.status !== 'Cancelled' && order.paymentStatus === 'pending' && ['Manual bKash', 'Manual Nagad'].includes(order.paymentMethod) && <p className="max-w-[180px] text-[10px] leading-4 text-amber-700">Check the transfer before cancelling; the customer may already have sent payment.</p>}
+                              {order.status === 'Cancelled' && order.paymentStatus === 'review' && <p className="max-w-[180px] text-[10px] leading-4 text-amber-700">Check the gateway and arrange any required refund manually.</p>}
+                            </div>
+                          );
+                        })()}
                       </td>
                     </tr>
                   );

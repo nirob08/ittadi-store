@@ -8,7 +8,7 @@ import {
 import Customer from '@/models/Customer';
 
 function loginRedirect(request, reason) {
-  return NextResponse.redirect(new URL(`/?google=${encodeURIComponent(reason)}#account`, request.url));
+  return NextResponse.redirect(new URL(`/account?google=${encodeURIComponent(reason)}`, request.url));
 }
 
 export async function GET(request) {
@@ -20,7 +20,7 @@ export async function GET(request) {
     process.env.GOOGLE_REDIRECT_URI || new URL('/api/auth/google/callback', request.url).toString();
   if (!code || !verifyGoogleState(state, signedState)) return loginRedirect(request, 'invalid_state');
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    return loginRedirect(request, 'not_configured');
+    return loginRedirect(request, 'not-configured');
   }
 
   try {
@@ -70,7 +70,7 @@ export async function GET(request) {
       });
     }
 
-    const response = NextResponse.redirect(new URL('/?account=welcome#account', request.url));
+    const response = NextResponse.redirect(new URL('/account?account=welcome', request.url));
     response.cookies.set(GOOGLE_STATE_COOKIE, '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

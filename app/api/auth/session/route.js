@@ -10,6 +10,7 @@ export async function GET(request) {
         id: customer._id,
         name: customer.name,
         email: customer.email,
+        avatarUrl: customer.avatarUrl || '',
         phone: customer.phone,
         address: customer.address,
         ...(Number.isFinite(customer.location?.latitude) && Number.isFinite(customer.location?.longitude)

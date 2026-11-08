@@ -1,9 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import type { FormEvent } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
+import Link from 'next/link';
+import { getDeliveryFee } from '@/lib/delivery';
 import {
+  ArrowLeft,
   Bell,
+  Camera,
   Check,
   CircleUserRound,
   Crosshair,
@@ -27,6 +31,7 @@ type Customer = {
   id: string;
   name: string;
   email: string;
+  avatarUrl?: string;
   phone: string;
   address?: Address;
   location?: Location;
@@ -35,6 +40,11 @@ type Order = {
   _id: string;
   orderNumber: string;
   total: number;
+  subtotal?: number;
+  deliveryFee?: number;
+  paymentMethod: string;
+  paymentStatus: string;
+  paymentReference?: string;
   status: string;
   statusHistory: { status: string; note: string; createdAt: string }[];
   items: { name: string; image: string; quantity: number; unitPrice: number }[];
@@ -50,13 +60,29 @@ type Notice = {
   product?: { name: string; image: string; price: number } | null;
 };
 type Tab = 'profile' | 'orders' | 'checkout' | 'support';
-type HubProps = {
-  checkoutItems: { productId: string; quantity: number }[] | null;
-  onCheckoutComplete: () => void;
-  onCloseCheckout: () => void;
+type CheckoutItem = {
+  productId: string;
+  quantity: number;
+  name: string;
+  unitPrice: number;
+  image: string;
 };
-
+type HubProps = {
+  checkoutItems: CheckoutItem[] | null;
+  onCheckoutComplete?: () => void;
+  onCloseCheckout?: () => void;
+  accountPage?: boolean;
+};
+type PaymentMethod = 'Cash on delivery' | 'SSLCOMMERZ' | 'Manual bKash' | 'Manual Nagad';
+type PaymentOptions = {
+  sslcommerzEnabled: boolean;
+  walletNumbers: { bkash: string; nagad: string };
+};
 const emptyAddress: Address = { street: '', area: '', district: '', postalCode: '' };
+const defaultPaymentOptions: PaymentOptions = {
+  sslcommerzEnabled: false,
+  walletNumbers: { bkash: '01830287623', nagad: '01830287623' },
+};
 const inputClass = 'mt-1.5 w-full rounded-xl border border-[#e5e2dc] bg-white px-3.5 py-3 text-sm text-[#24352c] outline-none transition placeholder:text-slate-400 focus:border-[#58745d] focus:ring-4 focus:ring-[#58745d]/10';
 
 function validLocation(value?: Location) {
@@ -73,10 +99,11 @@ async function responseJson(response: Response) {
   return result;
 }
 
-export default function CustomerHub({
+function CustomerHub({
   checkoutItems,
-  onCheckoutComplete,
-  onCloseCheckout,
+  onCheckoutComplete = () => {},
+  onCloseCheckout = () => {},
+  accountPage = false,
 }: HubProps) {
   const [panel, setPanel] = useState<'account' | 'notifications' | 'support' | null>(null);
   const [tab, setTab] = useState<Tab>('profile');
@@ -88,8 +115,12 @@ export default function CustomerHub({
     phone: '',
     address: emptyAddress,
     location: undefined as Location | undefined,
+    avatarUrl: '',
   });
   const [orders, setOrders] = useState<Order[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash on delivery');
+  const [paymentReference, setPaymentReference] = useState('');
+  const [paymentOptions, setPaymentOptions] = useState<PaymentOptions>(defaultPaymentOptions);
   const [messages, setMessages] = useState<Message[]>([]);
   const [notices, setNotices] = useState<Notice[]>([]);
   const [noticePermission, setNoticePermission] = useState('default');
@@ -99,8 +130,20 @@ export default function CustomerHub({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [busy, setBusy] = useState(false);
-  const activePanel = checkoutItems ? 'account' : panel;
+  const activePanel = accountPage ? 'account' : checkoutItems ? 'account' : panel;
   const activeTab = checkoutItems ? 'checkout' : tab;
+  const initials = customer?.name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase() || 'IT';
+  const checkoutSubtotal = checkoutItems?.reduce(
+    (total, item) => total + item.unitPrice * item.quantity,
+    0,
+  ) ?? 0;
+  const checkoutDeliveryFee = getDeliveryFee(profile.address.district);
 
   const loadSession = useCallback(async () => {
     try {
@@ -112,6 +155,7 @@ export default function CustomerHub({
           phone: result.customer.phone || '',
           address: { ...emptyAddress, ...(result.customer.address || {}) },
           location: validLocation(result.customer.location),
+          avatarUrl: result.customer.avatarUrl || '',
         });
       }
     } catch (sessionError) {
@@ -160,7 +204,18 @@ export default function CustomerHub({
             phone: result.customer.phone || '',
             address: { ...emptyAddress, ...(result.customer.address || {}) },
             location: validLocation(result.customer.location),
+            avatarUrl: result.customer.avatarUrl || '',
           });
+          if (accountPage) {
+            fetch('/api/customer/orders', { cache: 'no-store' })
+              .then(responseJson)
+              .then((orderResult) => {
+                if (active) setOrders(orderResult.orders);
+              })
+              .catch((ordersError: unknown) => {
+                if (active) setError(ordersError instanceof Error ? ordersError.message : 'Your orders could not be loaded.');
+              });
+          }
         }
       })
       .catch((sessionError: unknown) => {
@@ -198,13 +253,55 @@ export default function CustomerHub({
       google_failed: 'Google sign-in could not be completed. Please try again.',
       unverified_email: 'Google sign-in requires a verified email address.',
     };
-    if (googleError) {
+    const accountWelcome = params.get('account') === 'welcome';
+    if (googleError || accountWelcome) {
+      params.delete('google');
+      params.delete('account');
+      const query = params.toString();
+      window.history.replaceState(
+        null,
+        '',
+        `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`,
+      );
       Promise.resolve().then(() => {
         if (!active) return;
-        setError(messagesByReason[googleError] || 'Google sign-in could not be completed.');
         setPanel('account');
+        if (googleError) {
+          setError(messagesByReason[googleError] || 'Google sign-in could not be completed.');
+        } else {
+          setSuccess('You are signed in with Google. Welcome to Ittadi!');
+        }
       });
     }
+    return () => {
+      active = false;
+    };
+  }, [accountPage]);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/customer/payment-config', { cache: 'no-store' })
+      .then(responseJson)
+      .then((result) => {
+        if (active) setPaymentOptions(result);
+      })
+      .catch((configError: unknown) => {
+        if (active) setError(configError instanceof Error ? configError.message : 'Payment options could not be loaded.');
+      });
+
+    const paymentResult = new URLSearchParams(window.location.search).get('payment');
+    const returnedOrder = new URLSearchParams(window.location.search).get('order');
+    Promise.resolve().then(() => {
+      if (!active) return;
+      if (paymentResult === 'paid') {
+        setSuccess(`Payment verified${returnedOrder ? ` for order ${returnedOrder}` : ''}.`);
+      } else if (paymentResult === 'review') {
+        setSuccess(`Payment received and is being reviewed${returnedOrder ? ` for order ${returnedOrder}` : ''}.`);
+      } else if (paymentResult === 'verification') {
+        setError(`Payment could not be confirmed yet${returnedOrder ? ` for order ${returnedOrder}` : ''}. Please contact support before paying again.`);
+      }
+    });
+
     return () => {
       active = false;
     };
@@ -239,14 +336,14 @@ export default function CustomerHub({
     return () => window.clearInterval(timer);
   }, [activePanel, activeTab, loadMessages, loadNotifications, loadOrders]);
 
-  const showPanel = (nextPanel: 'account' | 'notifications' | 'support') => {
+  const showPanel = useCallback((nextPanel: 'account' | 'notifications' | 'support') => {
     setError('');
     setSuccess('');
     setPanel(nextPanel);
     if (nextPanel === 'support') setTab('support');
     if (nextPanel === 'notifications') void loadNotifications();
     if (nextPanel === 'account') void loadSession();
-  };
+  }, [loadNotifications, loadSession]);
 
   const handleAuth = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -266,6 +363,7 @@ export default function CustomerHub({
         phone: result.customer.phone || '',
         address: { ...emptyAddress, ...(result.customer.address || {}) },
         location: validLocation(result.customer.location),
+        avatarUrl: result.customer.avatarUrl || '',
       });
       setAuthForm({ name: '', email: '', password: '' });
       setSuccess(authMode === 'register' ? 'Your account is ready.' : 'Welcome back.');
@@ -294,6 +392,7 @@ export default function CustomerHub({
         phone: result.customer.phone,
         address: { ...emptyAddress, ...result.customer.address },
         location: validLocation(result.customer.location),
+        avatarUrl: result.customer.avatarUrl || '',
       });
       setSuccess('Your details have been saved.');
     } catch (profileError) {
@@ -329,6 +428,47 @@ export default function CustomerHub({
     );
   };
 
+  const chooseAvatar = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setError('');
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setError('Choose a JPG, PNG or WebP image for your profile photo.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Choose a photo smaller than 5 MB.');
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    try {
+      const image = new Image();
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error('This photo could not be opened.'));
+        image.src = objectUrl;
+      });
+      const scale = Math.min(1, 512 / Math.max(image.naturalWidth, image.naturalHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('Photo editing is not supported in this browser.');
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      let avatarUrl = canvas.toDataURL('image/jpeg', 0.78);
+      if (avatarUrl.length > 350000) avatarUrl = canvas.toDataURL('image/jpeg', 0.58);
+      if (avatarUrl.length > 350000) throw new Error('This photo could not be compressed enough. Please choose another one.');
+      setProfile((current) => ({ ...current, avatarUrl }));
+      setSuccess('Photo ready. Save your profile to keep the change.');
+    } catch (photoError) {
+      setError(photoError instanceof Error ? photoError.message : 'Your profile photo could not be processed.');
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  };
+
   const placeOrder = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!checkoutItems?.length) return;
@@ -340,14 +480,24 @@ export default function CustomerHub({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: checkoutItems,
+          items: checkoutItems.map(({ productId, quantity }) => ({ productId, quantity })),
           deliveryAddress: { ...profile, ...profile.address, location: profile.location },
+          paymentMethod,
+          paymentReference: paymentMethod.startsWith('Manual ') ? paymentReference.trim() : '',
         }),
       }));
+      setPanel('account');
       onCheckoutComplete();
-      setSuccess(`Order ${result.order.orderNumber} placed successfully.`);
       setOrders((current) => [result.order, ...current]);
       setTab('orders');
+      if (result.paymentUrl) {
+        window.location.assign(result.paymentUrl);
+        return;
+      }
+      setPaymentReference('');
+      setSuccess(paymentMethod.startsWith('Manual ')
+        ? `Order ${result.order.orderNumber} received. Payment is pending admin verification.`
+        : `Order ${result.order.orderNumber} placed successfully.`);
     } catch (orderError) {
       setError(orderError instanceof Error ? orderError.message : 'Your order could not be placed.');
     } finally {
@@ -424,35 +574,61 @@ export default function CustomerHub({
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex flex-col gap-2 sm:bottom-6 sm:right-6">
+      {!accountPage && <div className="fixed bottom-4 right-4 z-40 flex flex-col gap-2 sm:bottom-6 sm:right-6">
         <button type="button" onClick={() => showPanel('notifications')} aria-label="Open product notifications" className="relative flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-[#d49a54] text-white shadow-xl transition hover:-translate-y-0.5 hover:bg-[#bd8240]">
           <Bell size={20} />
         </button>
         <button type="button" onClick={() => showPanel('support')} aria-label="Chat with customer support" className="flex h-12 w-12 items-center justify-center rounded-full bg-[#315b45] text-white shadow-xl transition hover:-translate-y-0.5 hover:bg-[#24352c]">
           <MessageCircle size={21} />
         </button>
-        <button type="button" onClick={() => showPanel('account')} aria-label={customer ? 'Open customer profile' : 'Sign in or register'} className="flex h-12 w-12 items-center justify-center rounded-full bg-[#24352c] text-white shadow-xl transition hover:-translate-y-0.5 hover:bg-[#18251f]">
+        <Link href="/account" target="_blank" rel="noopener noreferrer" aria-label={customer ? 'Open customer profile' : 'Sign in or register'} className="flex h-12 w-12 items-center justify-center rounded-full bg-[#24352c] text-white shadow-xl transition hover:-translate-y-0.5 hover:bg-[#18251f]">
           {customer ? <CircleUserRound size={21} /> : <LogIn size={20} />}
-        </button>
-      </div>
+        </Link>
+      </div>}
 
       {activePanel && (
-        <div className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/45 p-0 backdrop-blur-sm sm:items-center sm:p-5" onMouseDown={(event) => {
+        <div className={accountPage ? 'mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:py-12' : 'fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/45 p-0 backdrop-blur-sm sm:items-center sm:p-5'} onMouseDown={!accountPage ? (event) => {
           if (event.target === event.currentTarget && !busy) {
             setPanel(null);
             if (checkoutItems) onCloseCheckout();
           }
-        }}>
-          <section aria-label={panel === 'notifications' ? 'Product notifications' : panel === 'support' ? 'Customer support chat' : 'Customer account'} aria-modal="true" role="dialog" className="flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-[2rem] border border-[#e9e6df] bg-[#faf9f6] shadow-2xl sm:max-h-[88vh] sm:max-w-2xl sm:rounded-[2rem]">
+        } : undefined}>
+          <section aria-label={panel === 'notifications' ? 'Product notifications' : panel === 'support' ? 'Customer support chat' : 'Customer account'} aria-modal={accountPage ? undefined : true} role={accountPage ? undefined : 'dialog'} className={accountPage ? 'flex min-h-[65vh] w-full flex-col overflow-hidden rounded-[2rem] border border-[#e9e6df] bg-[#faf9f6] shadow-[0_24px_80px_-40px_rgba(36,53,44,0.3)]' : 'flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-[2rem] border border-[#e9e6df] bg-[#faf9f6] shadow-2xl sm:max-h-[88vh] sm:max-w-2xl sm:rounded-[2rem]'}>
             <header className="flex items-start justify-between gap-4 border-b border-[#e9e6df] bg-white px-5 py-4 sm:px-7">
               <div>
-                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#829078]">Ittadi customer care</p>
+                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#829078]">{accountPage ? 'Your account' : 'Ittadi customer care'}</p>
                 <h2 className="mt-1 font-serif text-2xl text-[#24352c] sm:text-3xl">
                     {activePanel === 'notifications' ? 'Little updates' : activePanel === 'support' ? 'We are here to help.' : customer ? `Hello, ${customer.name.split(' ')[0]}.` : 'Your Ittadi account'}
                 </h2>
               </div>
-              <button type="button" onClick={() => { setPanel(null); if (checkoutItems) onCloseCheckout(); }} aria-label="Close customer panel" className="rounded-full p-2 text-slate-500 transition hover:bg-[#f5f3ed]"><X size={20} /></button>
+              {accountPage ? <Link href="/" className="inline-flex items-center gap-2 rounded-full border border-[#e9e6df] px-4 py-2 text-xs font-semibold text-[#315b45] transition hover:bg-[#f5f3ed]"><ArrowLeft size={15} /> Continue shopping</Link> : <button type="button" onClick={() => { setPanel(null); if (checkoutItems) onCloseCheckout(); }} aria-label="Close customer panel" className="rounded-full p-2 text-slate-500 transition hover:bg-[#f5f3ed]"><X size={20} /></button>}
             </header>
+
+            {accountPage && customer && (
+              <section className="grid gap-5 bg-gradient-to-br from-[#eef2eb] via-[#f7f6f2] to-[#f4eadb] px-5 py-6 sm:grid-cols-[1fr_auto] sm:items-center sm:px-8 sm:py-8">
+                <div className="flex min-w-0 items-center gap-4 sm:gap-5">
+                  <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[1.7rem] border-4 border-white bg-[#315b45] text-2xl font-bold text-white shadow-lg sm:h-24 sm:w-24">
+                    {profile.avatarUrl ? <img src={profile.avatarUrl} alt={`${customer.name}'s profile`} className="h-full w-full object-cover" /> : <span>{initials}</span>}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#829078]">Welcome to your account</p>
+                    <h3 className="mt-1 truncate font-serif text-2xl text-[#24352c] sm:text-3xl">{customer.name}</h3>
+                    <p className="mt-1 truncate text-xs text-slate-500">{customer.email}</p>
+                    <button type="button" onClick={() => setTab('profile')} className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#315b45] hover:text-[#24352c]"><Camera size={14} /> Edit profile &amp; photo</button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:min-w-64">
+                  <button type="button" onClick={() => { setTab('orders'); void loadOrders(); }} className="rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-left transition hover:bg-white">
+                    <span className="block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Orders</span>
+                    <span className="mt-1 block text-xl font-bold text-[#24352c]">{orders.length}</span>
+                  </button>
+                  <div className="rounded-2xl border border-white/80 bg-white/80 px-4 py-3">
+                    <span className="block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Account</span>
+                    <span className="mt-1 flex items-center gap-1.5 text-sm font-bold text-[#315b45]"><ShieldCheck size={15} /> Active</span>
+                  </div>
+                </div>
+              </section>
+            )}
 
             {activePanel === 'notifications' ? (
               <>
@@ -540,7 +716,30 @@ export default function CustomerHub({
 
                 <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-7">
                   {activeTab === 'profile' && (
-                    <form onSubmit={saveProfile} className="grid gap-4 sm:grid-cols-2">
+                    <>
+                      <div className="mb-5">
+                        <h3 className="font-serif text-xl text-[#24352c]">Your customer profile</h3>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">
+                          Save your contact and delivery details here. You can review order updates in My orders.
+                        </p>
+                      </div>
+                      <form onSubmit={saveProfile} className="grid gap-4 sm:grid-cols-2">
+                      <div className="flex items-center gap-4 rounded-2xl border border-[#e9e6df] bg-white p-4 sm:col-span-2">
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#315b45] text-lg font-bold text-white">
+                          {profile.avatarUrl ? <img src={profile.avatarUrl} alt="Profile photo preview" className="h-full w-full object-cover" /> : <span>{initials}</span>}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold text-[#24352c]">Profile photo</p>
+                          <p className="mt-1 text-[11px] leading-5 text-slate-500">JPG, PNG or WebP. Photos are resized before saving.</p>
+                          <div className="mt-2 flex flex-wrap gap-3">
+                            <label className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-[#315b45] hover:text-[#24352c]">
+                              <Camera size={14} /> {profile.avatarUrl ? 'Change photo' : 'Upload photo'}
+                              <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => void chooseAvatar(event)} />
+                            </label>
+                            {profile.avatarUrl && <button type="button" onClick={() => setProfile({ ...profile, avatarUrl: '' })} className="text-xs font-semibold text-slate-400 hover:text-rose-600">Remove</button>}
+                          </div>
+                        </div>
+                      </div>
                       <label className="text-xs font-semibold text-[#47564b]">Full name
                         <input className={inputClass} required minLength={2} maxLength={120} value={profile.name} onChange={(event) => setProfile({ ...profile, name: event.target.value })} />
                       </label>
@@ -572,15 +771,60 @@ export default function CustomerHub({
                         <button disabled={busy} type="submit" className="inline-flex items-center gap-2 rounded-xl bg-[#24352c] px-5 py-3 text-xs font-bold text-white transition hover:bg-[#315b45] disabled:opacity-60"><Check size={15} /> Save details</button>
                         <span className="text-[10px] text-slate-400">Location is only shared when you choose to capture it.</span>
                       </div>
-                    </form>
+                      </form>
+                    </>
                   )}
 
                   {activeTab === 'checkout' && (
                     <form onSubmit={placeOrder} className="space-y-5">
-                      <div className="rounded-2xl bg-white p-4">
-                        <div className="flex items-center gap-2 text-sm font-bold text-[#24352c]"><PackageCheck size={17} className="text-[#58745d]" /> Cash on delivery</div>
-                        <p className="mt-1 text-xs text-slate-500">Pay when your order arrives. You can follow each status from My orders.</p>
-                      </div>
+                      <fieldset className="space-y-2">
+                        <legend className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-[#829078]">Payment method</legend>
+                        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[#e9e6df] bg-white p-4">
+                          <input type="radio" name="paymentMethod" value="Cash on delivery" checked={paymentMethod === 'Cash on delivery'} onChange={() => setPaymentMethod('Cash on delivery')} className="mt-1 accent-[#315b45]" />
+                          <span><span className="flex items-center gap-2 text-sm font-bold text-[#24352c]"><PackageCheck size={16} className="text-[#58745d]" /> Cash on delivery</span><span className="mt-1 block text-xs text-slate-500">Pay when your order arrives.</span></span>
+                        </label>
+                        <label className={`flex items-start gap-3 rounded-2xl border border-[#e9e6df] bg-white p-4 ${paymentOptions.sslcommerzEnabled ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}>
+                          <input type="radio" name="paymentMethod" value="SSLCOMMERZ" checked={paymentMethod === 'SSLCOMMERZ'} disabled={!paymentOptions.sslcommerzEnabled} onChange={() => setPaymentMethod('SSLCOMMERZ')} className="mt-1 accent-[#315b45]" />
+                          <span><span className="block text-sm font-bold text-[#24352c]">Online payment · SSLCOMMERZ</span><span className="mt-1 block text-xs text-slate-500">{paymentOptions.sslcommerzEnabled ? 'Pay securely on the hosted payment page.' : 'Gateway setup is pending; configure merchant credentials to enable.'}</span></span>
+                        </label>
+                        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[#e9e6df] bg-white p-4">
+                          <input type="radio" name="paymentMethod" value="Manual bKash" checked={paymentMethod === 'Manual bKash'} onChange={() => setPaymentMethod('Manual bKash')} className="mt-1 accent-[#315b45]" />
+                          <span><span className="block text-sm font-bold text-[#24352c]">Manual bKash transfer</span><span className="mt-1 block text-xs text-slate-500">Send the total to {paymentOptions.walletNumbers.bkash}; admin will verify your TxnID.</span></span>
+                        </label>
+                        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[#e9e6df] bg-white p-4">
+                          <input type="radio" name="paymentMethod" value="Manual Nagad" checked={paymentMethod === 'Manual Nagad'} onChange={() => setPaymentMethod('Manual Nagad')} className="mt-1 accent-[#315b45]" />
+                          <span><span className="block text-sm font-bold text-[#24352c]">Manual Nagad transfer</span><span className="mt-1 block text-xs text-slate-500">Send the total to {paymentOptions.walletNumbers.nagad}; admin will verify your TxnID.</span></span>
+                        </label>
+                      </fieldset>
+                      {paymentMethod.startsWith('Manual ') && (
+                        <label className="block text-xs font-semibold text-[#47564b]">Payment transaction ID
+                          <input required minLength={4} maxLength={100} pattern="[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*" value={paymentReference} onChange={(event) => setPaymentReference(event.target.value)} className={inputClass} placeholder="Enter the TxnID after sending payment" />
+                          <span className="mt-1 block text-[10px] font-normal text-slate-500">Your order stays pending until an admin checks the transfer.</span>
+                        </label>
+                      )}
+                      {checkoutItems && (
+                        <section aria-label="Order summary" className="rounded-2xl border border-[#e9e6df] bg-white p-4">
+                          <h3 className="text-sm font-bold text-[#24352c]">Order summary</h3>
+                          <div className="mt-3 space-y-3">
+                            {checkoutItems.map((item) => (
+                              <div key={item.productId} className="flex items-center gap-3">
+                                <img src={item.image} alt="" className="h-12 w-12 rounded-lg object-cover" />
+                                <p className="min-w-0 flex-1 text-xs text-slate-600">
+                                  <span className="block truncate font-semibold text-[#24352c]">{item.name}</span>
+                                  Qty {item.quantity}
+                                </p>
+                                <span className="text-xs font-semibold text-[#24352c]">৳ {item.unitPrice * item.quantity}</span>
+                              </div>
+                            ))}
+                          </div>
+                            <div className="mt-4 space-y-2 border-t border-[#efede8] pt-3 text-sm">
+                              <div className="flex items-center justify-between"><span className="font-semibold text-slate-600">Subtotal</span><strong className="text-[#24352c]">৳ {checkoutSubtotal}</strong></div>
+                              <div className="flex items-center justify-between text-xs"><span className="text-slate-500">Delivery</span><span className="font-semibold text-[#24352c]">{checkoutDeliveryFee === null ? 'Enter district' : `৳ ${checkoutDeliveryFee}`}</span></div>
+                              {checkoutDeliveryFee !== null && <div className="flex items-center justify-between border-t border-[#efede8] pt-2"><span className="font-bold text-[#24352c]">Order total</span><strong className="text-[#24352c]">৳ {checkoutSubtotal + checkoutDeliveryFee}</strong></div>}
+                            </div>
+                            <p className="mt-1 text-[10px] text-slate-400">Delivery: ৳70 in Dhaka, ৳120 outside Dhaka.</p>
+                        </section>
+                      )}
                       <div className="grid gap-3 sm:grid-cols-2">
                         <label className="text-xs font-semibold text-[#47564b]">Recipient name<input className={inputClass} required minLength={2} value={profile.name} onChange={(event) => setProfile({ ...profile, name: event.target.value })} /></label>
                         <label className="text-xs font-semibold text-[#47564b]">Phone number<input className={inputClass} required type="tel" value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} placeholder="+880 1XXX-XXXXXX" /></label>
@@ -591,7 +835,7 @@ export default function CustomerHub({
                       <button type="button" onClick={captureLocation} className="inline-flex items-center gap-2 text-xs font-semibold text-[#58745d] underline underline-offset-4"><Crosshair size={14} /> {profile.location ? 'Update delivery location' : 'Add current location (optional)'}</button>
                       {checkoutItems?.length && <p className="text-xs text-slate-500">{checkoutItems.reduce((sum, item) => sum + item.quantity, 0)} item(s) in this order</p>}
                       <button type="submit" disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#24352c] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#315b45] disabled:opacity-60">
-                        <ShieldCheck size={17} /> {busy ? 'Placing order…' : 'Place cash-on-delivery order'}
+                        <ShieldCheck size={17} /> {busy ? 'Submitting…' : paymentMethod === 'SSLCOMMERZ' ? 'Continue to secure payment' : paymentMethod.startsWith('Manual ') ? 'Submit payment for verification' : 'Place cash-on-delivery order'}
                       </button>
                     </form>
                   )}
@@ -608,7 +852,13 @@ export default function CustomerHub({
                           <div className="mt-4 space-y-2 border-y border-[#efede8] py-3">
                             {order.items.map((item, index) => <div key={`${item.name}-${index}`} className="flex justify-between gap-3 text-xs"><span className="text-slate-600">{item.name} × {item.quantity}</span><span className="font-semibold text-[#24352c]">৳ {item.unitPrice * item.quantity}</span></div>)}
                           </div>
-                          <div className="mt-3 flex items-center justify-between text-xs"><span className="text-slate-500">Cash on delivery</span><strong>Total ৳ {order.total}</strong></div>
+                          <div className="mt-3 space-y-1 border-t border-[#efede8] pt-3 text-xs">
+                            <div className="flex justify-between"><span className="text-slate-500">Subtotal</span><span>৳ {order.subtotal ?? order.total}</span></div>
+                            <div className="flex justify-between"><span className="text-slate-500">Delivery</span><span>৳ {order.deliveryFee ?? 0}</span></div>
+                            <div className="flex justify-between"><span className="text-slate-500">Payment</span><span>{order.paymentMethod || 'Cash on delivery'} · {order.paymentStatus === 'paid' ? 'Paid' : order.paymentStatus === 'review' ? 'Needs review' : order.paymentStatus === 'failed' ? 'Failed' : order.paymentMethod === 'Cash on delivery' ? 'Pay on delivery' : 'Pending verification'}</span></div>
+                            {order.paymentReference && <div className="flex justify-between"><span className="text-slate-500">TxnID</span><span>{order.paymentReference}</span></div>}
+                            <div className="flex justify-between pt-1 font-bold"><span>Total</span><span>৳ {order.total}</span></div>
+                          </div>
                           <ol className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                             {order.statusHistory.map((entry, index) => <li key={`${entry.status}-${entry.createdAt}-${index}`} className={`rounded-xl px-2.5 py-2 ${index === order.statusHistory.length - 1 ? 'bg-[#eaf0e8] text-[#315b45]' : 'bg-[#f7f6f2] text-slate-500'}`}><p className="text-[10px] font-bold">{entry.status}</p><time className="mt-1 block text-[9px] opacity-70">{new Date(entry.createdAt).toLocaleDateString()}</time></li>)}
                           </ol>
@@ -645,6 +895,8 @@ export default function CustomerHub({
     </>
   );
 }
+
+export default CustomerHub;
 
 function decodeBase64Url(value: string) {
   const padding = '='.repeat((4 - value.length % 4) % 4);

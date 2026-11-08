@@ -3,15 +3,40 @@ import { randomBytes } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import { customerFromRequest } from '@/lib/customer-auth';
-import Order from '@/models/Order';
+import Order, { PAYMENT_METHODS } from '@/models/Order';
 import Product from '@/models/Product';
+import { getDeliveryFee, normalizeLegacyOrderBilling } from '@/lib/delivery';
+import { createSslCommerzSession, getSslCommerzConfig } from '@/lib/sslcommerz';
+
+async function cancelFailedGatewayOrder(orderId) {
+  const session = await mongoose.startSession();
+  try {
+    await session.withTransaction(async () => {
+      const order = await Order.findById(orderId).session(session);
+      if (!order || order.paymentMethod !== 'SSLCOMMERZ' || order.paymentStatus !== 'pending') return;
+      for (const item of order.items) {
+        await Product.updateOne({ _id: item.productId }, { $inc: { stock: item.quantity } }, { session });
+      }
+      order.status = 'Cancelled';
+      order.paymentStatus = 'failed';
+      order.statusHistory.push({ status: 'Cancelled', note: 'Payment session could not be started' });
+      await order.save({ session });
+    });
+  } finally {
+    await session.endSession();
+  }
+}
 
 export async function GET(request) {
   try {
     const customer = await customerFromRequest(request);
     if (!customer) return NextResponse.json({ error: 'Please sign in first.' }, { status: 401 });
-    const orders = await Order.find({ customerId: customer._id }).sort({ createdAt: -1 }).limit(50).lean();
-    return NextResponse.json({ orders });
+    const orders = await Order.find({ customerId: customer._id })
+      .select('-paymentValidationId')
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
+    return NextResponse.json({ orders: orders.map(normalizeLegacyOrderBilling) });
   } catch (error) {
     console.error('Customer orders could not be loaded:', error);
     return NextResponse.json({ error: 'Orders could not be loaded.' }, { status: 500 });
@@ -28,6 +53,14 @@ export async function POST(request) {
 
   const requestedItems = body?.items;
   const deliveryAddress = body?.deliveryAddress;
+  const paymentMethod = typeof body?.paymentMethod === 'string' ? body.paymentMethod : 'Cash on delivery';
+  const paymentReference = typeof body?.paymentReference === 'string' ? body.paymentReference.trim() : '';
+  if (!PAYMENT_METHODS.includes(paymentMethod)) {
+    return NextResponse.json({ error: 'Choose a supported payment method.' }, { status: 400 });
+  }
+  if (paymentMethod.startsWith('Manual ') && !/^[a-zA-Z0-9-]{4,100}$/.test(paymentReference)) {
+    return NextResponse.json({ error: 'Enter the bKash or Nagad transaction ID.' }, { status: 400 });
+  }
   if (!Array.isArray(requestedItems) || requestedItems.length < 1 || requestedItems.length > 20) {
     return NextResponse.json({ error: 'An order must contain between 1 and 20 products.' }, { status: 400 });
   }
@@ -82,6 +115,13 @@ export async function POST(request) {
   try {
     const customer = await customerFromRequest(request);
     if (!customer) return NextResponse.json({ error: 'Please sign in first.' }, { status: 401 });
+    const appOrigin = new URL(request.url).origin;
+    if (paymentMethod === 'SSLCOMMERZ' && !getSslCommerzConfig(appOrigin)) {
+      return NextResponse.json(
+        { error: 'Online payment is not configured yet. Choose COD or manual bKash/Nagad.' },
+        { status: 503 },
+      );
+    }
     await dbConnect();
     const productIds = [...quantityById.keys()];
     const products = await Product.find({ _id: { $in: productIds } }).lean();
@@ -95,7 +135,12 @@ export async function POST(request) {
       quantity: quantityById.get(String(product._id).toLowerCase()),
       unitPrice: product.price,
     }));
-    const total = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+    const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+    const deliveryFee = getDeliveryFee(address.district);
+    const total = subtotal + deliveryFee;
+    if (paymentMethod === 'SSLCOMMERZ' && (total < 10 || total > 500000)) {
+      return NextResponse.json({ error: 'SSLCOMMERZ orders must total between ৳10 and ৳500,000.' }, { status: 400 });
+    }
     const session = await mongoose.startSession();
     let order;
     try {
@@ -118,10 +163,18 @@ export async function POST(request) {
             orderNumber: `IT-${Date.now().toString(36).toUpperCase()}-${randomBytes(3).toString('hex').toUpperCase()}`,
             customerId: customer._id,
             items,
+            subtotal,
+            deliveryFee,
             total,
             deliveryAddress: address,
+            paymentMethod,
+            paymentStatus: paymentMethod === 'Cash on delivery' ? 'unpaid' : 'pending',
+            paymentReference: paymentMethod.startsWith('Manual ') ? paymentReference : '',
             status: 'Placed',
-            statusHistory: [{ status: 'Placed', note: 'Order received' }],
+            statusHistory: [{
+              status: 'Placed',
+              note: paymentMethod === 'Cash on delivery' ? 'Cash on delivery order received' : 'Order received, awaiting payment confirmation',
+            }],
           }],
           { session },
         );
@@ -129,6 +182,19 @@ export async function POST(request) {
       });
     } finally {
       await session.endSession();
+    }
+    if (paymentMethod === 'SSLCOMMERZ') {
+      try {
+        const paymentUrl = await createSslCommerzSession(order, appOrigin, customer.email);
+        return NextResponse.json({ success: true, order, paymentUrl }, { status: 201 });
+      } catch (paymentError) {
+        console.error('SSLCOMMERZ payment session could not be started:', paymentError);
+        await cancelFailedGatewayOrder(order._id);
+        return NextResponse.json(
+          { error: 'The online payment session could not be started. No payment was taken; please try COD or contact support.' },
+          { status: 502 },
+        );
+      }
     }
     return NextResponse.json({ success: true, order }, { status: 201 });
   } catch (error) {

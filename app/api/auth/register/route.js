@@ -37,7 +37,7 @@ export async function POST(request) {
     const customer = await Customer.create({ name, email, passwordHash: await hashPassword(password) });
     const response = NextResponse.json({
       success: true,
-      customer: { id: customer.id, name: customer.name, email: customer.email, phone: customer.phone, address: customer.address },
+      customer: { id: customer.id, name: customer.name, email: customer.email, avatarUrl: customer.avatarUrl || '', phone: customer.phone, address: customer.address },
     }, { status: 201 });
     setCustomerSessionCookie(response, customer.id);
     return response;

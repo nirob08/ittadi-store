@@ -6,7 +6,8 @@ const ProductSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   oldPrice: { type: Number },
   image: { type: String, required: true },
-  video: { type: String },
+  video: { type: String, trim: true, maxlength: 2000, default: '' },
+  description: { type: String, trim: true, maxlength: 2000, default: '' },
   badge: { type: String },
   stock: { type: Number, default: 10 },
 }, { timestamps: true });

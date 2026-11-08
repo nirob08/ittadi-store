@@ -11,6 +11,7 @@ export async function GET(request) {
         id: customer._id,
         name: customer.name,
         email: customer.email,
+        avatarUrl: customer.avatarUrl || '',
         phone: customer.phone,
         address: customer.address,
         ...(Number.isFinite(customer.location?.latitude) && Number.isFinite(customer.location?.longitude)
@@ -35,6 +36,24 @@ export async function PATCH(request) {
   const name = typeof body?.name === 'string' ? body.name.trim() : '';
   const phone = typeof body?.phone === 'string' ? body.phone.trim() : '';
   const address = body?.address;
+  const avatarUrl = body?.avatarUrl;
+  let avatarBytes;
+  if (avatarUrl !== undefined && avatarUrl !== null && avatarUrl !== '') {
+    const match = typeof avatarUrl === 'string'
+      ? /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(avatarUrl)
+      : null;
+    if (!match || avatarUrl.length > 350000) {
+      return NextResponse.json({ error: 'Please choose a valid JPG, PNG or WebP profile photo.' }, { status: 400 });
+    }
+    avatarBytes = Buffer.from(match[2], 'base64');
+    const signatureIsValid =
+      (match[1] === 'jpeg' && avatarBytes[0] === 0xff && avatarBytes[1] === 0xd8 && avatarBytes[2] === 0xff) ||
+      (match[1] === 'png' && avatarBytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) ||
+      (match[1] === 'webp' && avatarBytes.toString('ascii', 0, 4) === 'RIFF' && avatarBytes.toString('ascii', 8, 12) === 'WEBP');
+    if (avatarBytes.length > 256 * 1024 || !signatureIsValid) {
+      return NextResponse.json({ error: 'Profile photos must be valid images no larger than 256 KB.' }, { status: 400 });
+    }
+  }
   if (
     name.length < 2 ||
     name.length > 120 ||
@@ -76,7 +95,15 @@ export async function PATCH(request) {
     if (!customer) return NextResponse.json({ error: 'Please sign in first.' }, { status: 401 });
     await Customer.updateOne(
       { _id: customer._id },
-      { $set: { name, phone, address: nextAddress, ...(location ? { location } : {}) } },
+      {
+        $set: {
+          name,
+          phone,
+          address: nextAddress,
+          ...(location ? { location } : {}),
+          ...(avatarUrl !== undefined ? { avatarUrl: avatarUrl || '' } : {}),
+        },
+      },
     );
     const savedLocation =
       location ||
@@ -89,6 +116,7 @@ export async function PATCH(request) {
         id: customer._id,
         name,
         email: customer.email,
+        avatarUrl: avatarUrl === undefined ? customer.avatarUrl || '' : avatarUrl || '',
         phone,
         address: nextAddress,
         ...(savedLocation ? { location: savedLocation } : {}),

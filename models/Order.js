@@ -10,6 +10,13 @@ export const ORDER_STATUSES = [
   'Cancelled',
 ];
 
+export const PAYMENT_METHODS = [
+  'Cash on delivery',
+  'SSLCOMMERZ',
+  'Manual bKash',
+  'Manual Nagad',
+];
+
 const OrderSchema = new mongoose.Schema(
   {
     orderNumber: { type: String, required: true, unique: true, index: true },
@@ -23,8 +30,14 @@ const OrderSchema = new mongoose.Schema(
         unitPrice: { type: Number, required: true, min: 0 },
       },
     ],
+    subtotal: { type: Number, min: 0 },
+    deliveryFee: { type: Number, min: 0, default: 0 },
     total: { type: Number, required: true, min: 0 },
-    paymentMethod: { type: String, enum: ['Cash on delivery'], default: 'Cash on delivery' },
+    paymentMethod: { type: String, enum: PAYMENT_METHODS, default: 'Cash on delivery' },
+    paymentStatus: { type: String, enum: ['unpaid', 'pending', 'paid', 'review', 'failed'], default: 'unpaid' },
+    paymentReference: { type: String, trim: true, maxlength: 100, default: '' },
+    paymentValidationId: { type: String, trim: true, maxlength: 100, default: '' },
+    paidAt: { type: Date },
     status: { type: String, enum: ORDER_STATUSES, default: 'Placed' },
     statusHistory: [
       {

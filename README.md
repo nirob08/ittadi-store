@@ -1,6 +1,6 @@
 # Ittadi Store
 
-Ittadi is a full-width Next.js storefront with customer accounts, Google sign-in, cash-on-delivery orders, delivery tracking, support chat, product announcements, optional browser push, and a password-protected admin studio.
+Ittadi is a full-width Next.js storefront with customer accounts, Google sign-in, COD and online/manual wallet payment options, delivery tracking, support chat, product announcements, optional browser push, and a password-protected admin studio.
 
 ## Local setup
 
@@ -40,19 +40,28 @@ VAPID_PRIVATE_KEY=<vapid-private-key>
 VAPID_SUBJECT=mailto:ittadi4u@gmail.com
 NEXT_PUBLIC_FACEBOOK_URL=<ittadi-facebook-page-url>
 NEXT_PUBLIC_INSTAGRAM_URL=<ittadi-instagram-profile-url>
+APP_BASE_URL=https://www.ittadi4u.com
+SSLCOMMERZ_STORE_ID=<private-merchant-store-id>
+SSLCOMMERZ_STORE_PASSWORD=<private-merchant-store-password>
+SSLCOMMERZ_SANDBOX=true
+BKASH_MERCHANT_NUMBER=01830287623
+NAGAD_MERCHANT_NUMBER=01830287623
 ```
 
 In Google Cloud Console, create a Web OAuth client, add your site origin to authorized JavaScript origins, and add `/api/auth/google/callback` to authorized redirect URIs. Use your production HTTPS URL in the production `GOOGLE_REDIRECT_URI`.
+
+SSLCOMMERZ uses its hosted checkout and validates both browser returns and IPN notifications server-side. Configure the provider's IPN listener as `https://www.ittadi4u.com/api/payments/sslcommerz/ipn`. Keep the store ID and password in private environment configuration; never put them in browser code or chat. `SSLCOMMERZ_SANDBOX` defaults to sandbox; set it to `false` only with live credentials and after testing. `APP_BASE_URL` must be the exact public HTTPS origin in production. The supplied bKash/Nagad numbers are public checkout details and can be overridden with `BKASH_MERCHANT_NUMBER` and `NAGAD_MERCHANT_NUMBER`. Until gateway credentials are present, checkout keeps SSLCOMMERZ disabled and COD/manual wallet methods available. Admins must verify manual transfers against their wallet history before confirming payment.
 
 Generate a VAPID key pair with `npx web-push generate-vapid-keys`. Browser push requires HTTPS in production and is opt-in: a customer must enable notifications in their browser. Product announcements also stay available in the in-app notifications panel.
 
 ## Store and order flow
 
-- Customers can register with email/password or Google, save a delivery address, and explicitly request browser location access.
-- Checkout uses cash on delivery. Orders use current database prices and atomically reserve stock; order status changes appear in the customer account.
+- Customers can open **Account** in the storefront header or **My account & orders** in the footer to visit the dedicated `/account` page, register/sign in, update their profile photo and delivery details, and review order updates. Profile photos are resized in the browser and stored with the customer record. Browser location access is always optional.
+- The shopping bag is saved in the current browser and restored against live stock. Checkout shows an itemized subtotal, charges ৳70 in Dhaka and ৳120 outside Dhaka, and supports COD, manual bKash/Nagad with admin TxnID verification, or hosted SSLCOMMERZ when configured. Orders use current database prices and atomically reserve stock. Unpaid orders cannot be processed; cancelling an eligible order restores reserved stock.
+- The `/policies` page explains delivery charges, the 7-day return/exchange request window for items arriving stained, broken or otherwise damaged, and payment options in Bangla and English. Customers should include the order number and clear photos when reporting damage.
 - Customers can chat with support. Admin replies appear in the customer conversation, and customer details, orders, and conversations are available in `/admin`.
-- Double-click or double-tap the store logo for admin sign-in, or open `/admin` directly. Product write APIs require the signed admin session. Admin sign-in itself does not depend on MongoDB; product/customer/order data does.
-- Product images can be supplied as HTTPS URLs. Social links at the top currently point to the Facebook and Instagram sites; replace them with Ittadi's profile URLs when available.
+- Double-click or double-tap the store logo for admin sign-in, or open `/admin` directly. Admins can add, edit and delete products; active-order products cannot be deleted. Order status updates follow the delivery workflow and are enforced by the API. Product write APIs require the signed admin session. Admin sign-in itself does not depend on MongoDB; product/customer/order data does.
+- Product images can be supplied as HTTPS URLs or local root-relative image paths. Facebook and Instagram links default to Ittadi's public profiles and can be overridden with the environment variables above.
 
 ## Commands
 

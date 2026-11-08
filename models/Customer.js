@@ -6,6 +6,7 @@ const CustomerSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, select: false },
     googleId: { type: String, unique: true, sparse: true, select: false },
+    avatarUrl: { type: String, maxlength: 350000, default: '' },
     phone: { type: String, trim: true, maxlength: 24, default: '' },
     address: {
       street: { type: String, trim: true, maxlength: 240, default: '' },

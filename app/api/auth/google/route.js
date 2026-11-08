@@ -4,7 +4,7 @@ import { createGoogleState, GOOGLE_STATE_COOKIE } from '@/lib/customer-auth';
 export async function GET(request) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId || !process.env.GOOGLE_CLIENT_SECRET) {
-    return NextResponse.redirect(new URL('/?google=not-configured#account', request.url));
+    return NextResponse.redirect(new URL('/account?google=not-configured', request.url));
   }
 
   const { state, signedState } = createGoogleState();
