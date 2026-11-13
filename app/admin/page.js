@@ -754,9 +754,9 @@ export default function AdminPanel() {
               <RefreshCw size={14} /> Refresh list
             </button>
           </div>
-          <div className="overflow-x-auto">
+          <div aria-label="Product list. Newest products appear first." tabIndex={0} className="max-h-[70vh] overflow-auto overscroll-contain focus:outline-none focus-visible:ring-2 focus-visible:ring-[#58745d]">
             <table className="w-full min-w-[690px] text-left text-sm">
-              <thead className="bg-[#faf9f6] text-[10px] font-bold uppercase tracking-[0.13em] text-slate-500">
+              <thead className="sticky top-0 z-10 bg-[#faf9f6] text-[10px] font-bold uppercase tracking-[0.13em] text-slate-500 shadow-sm">
                 <tr>
                   <th className="px-5 py-3 sm:px-7">Product</th>
                   <th className="px-4 py-3">Category</th>
@@ -807,9 +807,9 @@ export default function AdminPanel() {
             </div>
             <button type="button" onClick={() => void fetchAdminData()} className="rounded-full border border-[#e5e2dc] px-4 py-2 text-xs font-semibold text-slate-600 hover:border-[#829078]">Refresh</button>
           </div>
-          <div className="overflow-x-auto">
+          <div aria-label="Customer orders. Newest orders appear first." tabIndex={0} className="max-h-[70vh] overflow-auto overscroll-contain focus:outline-none focus-visible:ring-2 focus-visible:ring-[#58745d]">
             <table className="w-full min-w-[980px] text-left text-sm">
-              <thead className="bg-[#faf9f6] text-[10px] font-bold uppercase tracking-[0.13em] text-slate-500">
+              <thead className="sticky top-0 z-10 bg-[#faf9f6] text-[10px] font-bold uppercase tracking-[0.13em] text-slate-500 shadow-sm">
                 <tr><th className="px-5 py-3">Order / Customer</th><th className="px-4 py-3">Delivery address</th><th className="px-4 py-3">Items / bill</th><th className="px-4 py-3">Status</th></tr>
               </thead>
               <tbody className="divide-y divide-[#efede8]">
@@ -922,9 +922,9 @@ export default function AdminPanel() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf0e8] text-[#315b45]"><Users size={18} /></div>
             <div><h2 className="text-lg font-bold">Customers</h2><p className="mt-1 text-xs text-slate-500">{customers.length} registered customer(s)</p></div>
           </div>
-          <div className="overflow-x-auto">
+          <div aria-label="Customer directory. Newest customers appear first." tabIndex={0} className="max-h-[70vh] overflow-auto overscroll-contain focus:outline-none focus-visible:ring-2 focus-visible:ring-[#58745d]">
             <table className="w-full min-w-[850px] text-left text-sm">
-              <thead className="bg-[#faf9f6] text-[10px] font-bold uppercase tracking-[0.13em] text-slate-500"><tr><th className="px-5 py-3 sm:px-7">Customer</th><th className="px-4 py-3">Contact</th><th className="px-4 py-3">Saved location</th><th className="px-4 py-3">Joined</th><th className="px-4 py-3">Orders</th><th className="px-5 py-3 text-right sm:px-7">Actions</th></tr></thead>
+              <thead className="sticky top-0 z-10 bg-[#faf9f6] text-[10px] font-bold uppercase tracking-[0.13em] text-slate-500 shadow-sm"><tr><th className="px-5 py-3 sm:px-7">Customer</th><th className="px-4 py-3">Contact</th><th className="px-4 py-3">Saved location</th><th className="px-4 py-3">Joined</th><th className="px-4 py-3">Orders</th><th className="px-5 py-3 text-right sm:px-7">Actions</th></tr></thead>
               <tbody className="divide-y divide-[#efede8]">
                 {customers.length === 0 ? <tr><td colSpan="6" className="px-5 py-12 text-center text-sm text-slate-500">Registered customer details will appear here.</td></tr> : customers.map((customer) => (
                   <tr key={customer._id} className="hover:bg-[#faf9f6]">
@@ -949,7 +949,9 @@ export default function AdminPanel() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf0e8] text-[#315b45]"><MessageCircle size={18} /></div>
             <div><h2 className="text-lg font-bold">Customer support inbox</h2><p className="mt-1 text-xs text-slate-500">Reply directly to customer messages from here.</p></div>
           </div>
-          <div className="mt-5 grid gap-4 xl:grid-cols-2">
+          <p className="px-5 pt-4 text-xs text-slate-500 sm:px-7">Newest customer conversations appear first. Scroll this list to view earlier conversations.</p>
+          <div aria-label="Customer support conversations. Newest conversations appear first." tabIndex={0} className="mt-3 max-h-[70vh] overflow-y-auto overscroll-contain px-5 pb-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#58745d] sm:px-7 sm:pb-7">
+            <div className="grid gap-4 xl:grid-cols-2">
             {conversations.length === 0 ? (
               <div className="rounded-2xl bg-[#faf9f6] px-5 py-10 text-center text-sm text-slate-500 xl:col-span-2">Customer conversations will appear here.</div>
             ) : conversations.map((conversation) => (
@@ -974,6 +976,7 @@ export default function AdminPanel() {
                 </form>
               </article>
             ))}
+            </div>
           </div>
         </section>
 

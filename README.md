@@ -63,6 +63,7 @@ Generate a VAPID key pair with `npx web-push generate-vapid-keys`. Browser push 
 - Product cards open dedicated `/product/[id]` pages with touch-friendly image galleries, video, specifications, verified reviews, and same-category suggestions. The storefront, account, product, and admin headers include a light/dark theme switch; the browser saves the selection in `localStorage`.
 - Double-click or double-tap the store logo for admin sign-in, or open `/admin` directly. Admins can add, edit and delete products; active-order products cannot be deleted. Product forms accept up to eight images, uploaded through the existing MongoDB GridFS media handler (not local Vercel disk), plus an optional HTTPS video URL and specifications. Individual uploads are limited to 4 MB to fit serverless request limits.
 - Admins can update order status and parcel location/tracking notes. The customer account refreshes order details periodically. The customer directory supports profile/order inspection and account deletion; deletion is blocked for active orders and retains completed order records.
+- Admin product, order, customer, and support lists are independently scrollable with sticky table headers where applicable; recent products, orders, customers, and conversations appear first.
 - Product images can also be supplied as HTTPS URLs or local root-relative image paths. Facebook and Instagram links default to Ittadi's public profiles and can be overridden with the environment variables above.
 
 ## Commands
