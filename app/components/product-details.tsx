@@ -203,8 +203,8 @@ export default function ProductDetails({ productId }: { productId: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#faf9f6] text-slate-900">
-      <header className="glass-nav sticky top-0 z-30 border-b border-[#e9e6df]">
+    <div className="product-page-shell min-h-screen bg-[#faf9f6] text-slate-900">
+      <header className="glass-nav backdrop-blur-xl backdrop-saturate-150 sticky top-0 z-30 border-b border-[#e9e6df]">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-8">
           <Link href="/" className="flex items-center gap-2" aria-label="Ittadi home">
             <img src="/favicon.png" alt="" className="h-10 w-10 rounded-xl object-cover" />
@@ -276,7 +276,7 @@ export default function ProductDetails({ productId }: { productId: string }) {
             )}
           </section>
 
-          <section className="glass-panel h-fit rounded-3xl p-5 sm:p-8">
+          <section className="glass-panel backdrop-blur-2xl backdrop-saturate-150 h-fit rounded-3xl p-5 sm:p-8">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#829078]">{selectedProduct.category}</p>
             <h1 className="mt-2 font-serif text-3xl text-[#24352c] sm:text-4xl">{selectedProduct.name}</h1>
             <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -341,7 +341,7 @@ export default function ProductDetails({ productId }: { productId: string }) {
           </div>
           {reviewError && <p role="alert" className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-xs text-rose-700">{reviewError}</p>}
           {!selectedProduct.isSample && (
-            <form onSubmit={submitReview} className="glass-panel mt-5 rounded-2xl p-4 sm:p-5">
+            <form onSubmit={submitReview} className="glass-panel backdrop-blur-2xl backdrop-saturate-150 mt-5 rounded-2xl p-4 sm:p-5">
               <label className="text-xs font-semibold text-[#47564b]">Your rating</label>
               <div className="mt-2 flex gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -360,7 +360,7 @@ export default function ProductDetails({ productId }: { productId: string }) {
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             {reviews.length === 0 && !reviewError && <p className="rounded-xl bg-white p-4 text-xs text-slate-500">Be the first to share feedback after your order is delivered.</p>}
             {reviews.map((review) => (
-              <article key={review._id} className="glass-panel rounded-2xl p-4">
+              <article key={review._id} className="glass-panel backdrop-blur-2xl backdrop-saturate-150 rounded-2xl p-4">
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-xs font-bold text-[#24352c]">{review.customerName}</p>
                   <span className="flex shrink-0" aria-label={`${review.rating} out of 5 stars`}>
@@ -380,7 +380,7 @@ export default function ProductDetails({ productId }: { productId: string }) {
             <h2 className="mt-1 font-serif text-2xl text-[#24352c]">You may also like</h2>
             <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {relatedProducts.slice(0, 4).map((related) => (
-                <Link key={related._id} href={`/product/${related._id}`} className="premium-card overflow-hidden">
+                <Link key={related._id} href={`/product/${related._id}`} className="premium-card backdrop-blur-xl backdrop-saturate-150 overflow-hidden">
                   <img src={related.image} alt={related.name} className="aspect-square w-full object-cover transition duration-500 hover:scale-[1.03]" />
                   <div className="p-3">
                     <p className="line-clamp-2 text-xs font-semibold text-[#24352c]">{related.name}</p>

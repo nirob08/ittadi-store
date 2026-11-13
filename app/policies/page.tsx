@@ -9,7 +9,7 @@ export const metadata = {
 export default function PoliciesPage() {
   return (
     <main className="min-h-screen bg-[#faf9f6] text-[#24352c]">
-      <header className="glass-nav sticky top-0 z-30 border-b border-[#e9e6df]">
+      <header className="glass-nav backdrop-blur-xl backdrop-saturate-150 sticky top-0 z-30 border-b border-[#e9e6df]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
           <Link href="/" className="flex items-center gap-3" aria-label="Ittadi home">
             <img src="/favicon.png" alt="" className="h-10 w-10 rounded-xl object-cover" />
@@ -28,7 +28,7 @@ export default function PoliciesPage() {
         <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500">Order details for customers across Bangladesh. If anything is unclear, contact our team before placing your order.</p>
 
         <div className="mt-9 grid gap-5">
-          <section className="glass-panel rounded-3xl p-6 sm:p-8">
+          <section className="glass-panel backdrop-blur-2xl backdrop-saturate-150 rounded-3xl p-6 sm:p-8">
             <h2 className="font-serif text-2xl">ডেলিভারি / Delivery</h2>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <div className="rounded-2xl bg-[#f7f6f2] p-4">
@@ -43,14 +43,14 @@ export default function PoliciesPage() {
             <p className="mt-4 text-xs leading-5 text-slate-500">Checkout delivery charge is calculated from the district in your delivery address. Our team will confirm your order details.</p>
           </section>
 
-          <section className="glass-panel rounded-3xl p-6 sm:p-8">
+          <section className="glass-panel backdrop-blur-2xl backdrop-saturate-150 rounded-3xl p-6 sm:p-8">
             <h2 className="font-serif text-2xl">ফেরত / বদল · Returns &amp; exchanges</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">পণ্য হাতে পাওয়ার ৭ দিনের মধ্যে দাগ, ভাঙা বা অন্য ক্ষতি দেখা গেলে order number ও পরিষ্কার ছবি দিয়ে support-এ জানান। যাচাইয়ের পর return বা exchange-এর পরবর্তী ধাপ জানানো হবে।</p>
             <p className="mt-3 text-sm leading-6 text-slate-600">If an item arrives stained, broken or otherwise damaged, contact support within 7 days of delivery with your order number and clear photos. We will review the issue and confirm the next steps for a return or exchange.</p>
             <p className="mt-3 text-xs leading-5 text-slate-500">অভিযোগের সাথে পণ্যের পরিষ্কার ছবি ও order number দিন। Include clear photos of the item and your order number with your request.</p>
           </section>
 
-          <section className="glass-panel rounded-3xl p-6 sm:p-8">
+          <section className="glass-panel backdrop-blur-2xl backdrop-saturate-150 rounded-3xl p-6 sm:p-8">
             <h2 className="font-serif text-2xl">পেমেন্ট / Payments</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">Checkout-এ Cash on Delivery, manual bKash ও Nagad transfer পাওয়া যায়। bKash/Nagad নম্বর checkout-এ দেখানো হবে; payment করার পর TxnID দিন। Admin যাচাই না করা পর্যন্ত order pending থাকবে। SSLCOMMERZ gateway merchant credentials configure হলে secure online payment option-ও চালু হবে।</p>
             <p className="mt-3 text-sm leading-6 text-slate-600">Checkout supports Cash on Delivery and manual bKash/Nagad transfers. Use the number shown at checkout and submit your TxnID; the order stays pending until an admin verifies it. Secure SSLCOMMERZ checkout will be available once merchant credentials are configured.</p>

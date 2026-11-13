@@ -10,7 +10,7 @@ export const metadata = {
 export default function AccountPage() {
   return (
     <div className="min-h-screen bg-[#faf9f6]">
-      <header className="glass-nav sticky top-0 z-30 border-b border-[#e9e6df]">
+      <header className="glass-nav backdrop-blur-xl backdrop-saturate-150 sticky top-0 z-30 border-b border-[#e9e6df]">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
           <Link href="/" className="flex items-center gap-3" aria-label="Ittadi home">
             <img src="/favicon.png" alt="" className="h-10 w-10 rounded-xl object-cover" />

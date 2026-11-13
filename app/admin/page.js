@@ -541,7 +541,7 @@ export default function AdminPanel() {
   if (!authenticated) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#f7f6f2] px-4 py-12">
-        <section className="glass-panel w-full max-w-md rounded-3xl p-7 shadow-xl shadow-[#24352c]/5 sm:p-9">
+        <section className="glass-panel backdrop-blur-2xl backdrop-saturate-150 w-full max-w-md rounded-3xl p-7 shadow-xl shadow-[#24352c]/5 sm:p-9">
           <Link href="/" className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 transition hover:text-[#315b45]">
             <ArrowLeft size={15} /> Back to store
           </Link>
@@ -576,8 +576,8 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f6f2] text-[#24352c]">
-      <header className="glass-nav sticky top-0 z-30 border-b border-[#e9e6df]">
+    <div className="admin-shell min-h-screen bg-[#f7f6f2] text-[#24352c]">
+      <header className="glass-nav backdrop-blur-xl backdrop-saturate-150 sticky top-0 z-30 border-b border-[#e9e6df]">
         <div className="flex w-full items-center justify-between gap-4 px-4 py-4 sm:px-8 lg:px-12">
           <div className="flex items-center gap-3">
             <img src="/favicon.png" alt="" className="h-10 w-10 rounded-xl object-cover" />
@@ -598,8 +598,8 @@ export default function AdminPanel() {
         </div>
       </header>
 
-      <main className="w-full space-y-7 px-4 py-8 sm:px-8 sm:py-10 lg:px-12">
-        <section className="rounded-3xl bg-[#24352c] px-6 py-7 text-white sm:px-9 sm:py-9">
+      <main className="admin-main w-full space-y-7 px-4 py-8 sm:px-8 sm:py-10 lg:px-12">
+        <section className="admin-hero rounded-3xl px-6 py-7 text-white sm:px-9 sm:py-9">
           <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#d9c7a6]">Your little corner of the internet</p>
@@ -616,7 +616,7 @@ export default function AdminPanel() {
         {error && <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
         {message && <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{message}</p>}
 
-        <section id="product-form" className="glass-panel rounded-3xl p-5 sm:p-8">
+        <section id="product-form" className="glass-panel backdrop-blur-2xl backdrop-saturate-150 rounded-3xl p-5 sm:p-8">
           <div className="mb-6 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf0e8] text-[#315b45]"><PackagePlus size={19} /></div>
             <div>
@@ -704,7 +704,7 @@ export default function AdminPanel() {
         </section>
 
         {products.length === 0 && (
-          <section className="glass-panel rounded-3xl p-5 sm:p-8">
+          <section className="glass-panel backdrop-blur-2xl backdrop-saturate-150 rounded-3xl p-5 sm:p-8">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#829078]">Ready-to-publish preview catalog</p>
             <h2 className="mt-2 font-serif text-2xl text-[#24352c]">Make the six sample listings orderable</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">This creates six database-backed products using the sample prices shown in the storefront. Confirm that prices, image rights and stock match what you can actually fulfill before publishing; the listings will immediately accept orders.</p>
@@ -720,7 +720,7 @@ export default function AdminPanel() {
           </section>
         )}
 
-        <section className="glass-panel overflow-hidden rounded-3xl">
+        <section className="glass-panel backdrop-blur-2xl backdrop-saturate-150 overflow-hidden rounded-3xl">
           <div className="flex items-center justify-between border-b border-[#efede8] px-5 py-5 sm:px-7">
             <div>
               <h2 className="text-lg font-bold">Verified customer reviews</h2>
@@ -744,7 +744,7 @@ export default function AdminPanel() {
           </div>
         </section>
 
-        <section className="glass-panel overflow-hidden rounded-3xl">
+        <section className="glass-panel backdrop-blur-2xl backdrop-saturate-150 overflow-hidden rounded-3xl">
           <div className="flex flex-col justify-between gap-3 border-b border-[#efede8] px-5 py-5 sm:flex-row sm:items-center sm:px-7">
             <div>
               <h2 className="text-lg font-bold">Your products</h2>
@@ -799,7 +799,7 @@ export default function AdminPanel() {
           </div>
         </section>
 
-        <section className="glass-panel overflow-hidden rounded-3xl">
+        <section className="glass-panel backdrop-blur-2xl backdrop-saturate-150 overflow-hidden rounded-3xl">
           <div className="flex items-center justify-between border-b border-[#efede8] px-5 py-5 sm:px-7">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf0e8] text-[#315b45]"><Truck size={18} /></div>
@@ -917,7 +917,7 @@ export default function AdminPanel() {
           </div>
         </section>
 
-        <section className="glass-panel overflow-hidden rounded-3xl">
+        <section className="glass-panel backdrop-blur-2xl backdrop-saturate-150 overflow-hidden rounded-3xl">
           <div className="flex items-center gap-3 border-b border-[#efede8] px-5 py-5 sm:px-7">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf0e8] text-[#315b45]"><Users size={18} /></div>
             <div><h2 className="text-lg font-bold">Customers</h2><p className="mt-1 text-xs text-slate-500">{customers.length} registered customer(s)</p></div>
@@ -944,7 +944,7 @@ export default function AdminPanel() {
           </div>
         </section>
 
-        <section className="glass-panel rounded-3xl p-5 sm:p-7">
+        <section className="glass-panel backdrop-blur-2xl backdrop-saturate-150 rounded-3xl p-5 sm:p-7">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf0e8] text-[#315b45]"><MessageCircle size={18} /></div>
             <div><h2 className="text-lg font-bold">Customer support inbox</h2><p className="mt-1 text-xs text-slate-500">Reply directly to customer messages from here.</p></div>
@@ -982,14 +982,14 @@ export default function AdminPanel() {
 
         {customerDetailLoading && (
           <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm" role="status">
-            <div className="glass-panel rounded-2xl px-6 py-5 text-sm font-semibold">Loading customer profile…</div>
+            <div className="glass-panel backdrop-blur-2xl backdrop-saturate-150 rounded-2xl px-6 py-5 text-sm font-semibold">Loading customer profile…</div>
           </div>
         )}
         {customerDetail && (
           <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/55 p-3 backdrop-blur-sm sm:p-6" role="presentation" onMouseDown={(event) => {
             if (event.target === event.currentTarget) setCustomerDetail(null);
           }}>
-            <section aria-label={`Customer profile for ${customerDetail.customer.name}`} aria-modal="true" role="dialog" className="glass-panel max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-3xl p-5 shadow-2xl sm:p-7">
+            <section aria-label={`Customer profile for ${customerDetail.customer.name}`} aria-modal="true" role="dialog" className="glass-panel backdrop-blur-2xl backdrop-saturate-150 max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-3xl p-5 shadow-2xl sm:p-7">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex min-w-0 items-center gap-4">
                   {customerDetail.customer.avatarUrl

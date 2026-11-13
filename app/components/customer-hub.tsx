@@ -576,7 +576,7 @@ function CustomerHub({
 
   return (
     <>
-      {!accountPage && <div className="fixed bottom-4 right-4 z-40 flex flex-col gap-2 sm:bottom-6 sm:right-6">
+      {!accountPage && <div className="customer-actions backdrop-blur-xl backdrop-saturate-150 fixed bottom-4 right-4 z-40 flex flex-col gap-2 sm:bottom-6 sm:right-6">
         <button type="button" onClick={() => showPanel('notifications')} aria-label="Open product notifications" className="relative flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-[#d49a54] text-white shadow-xl transition hover:-translate-y-0.5 hover:bg-[#bd8240]">
           <Bell size={20} />
         </button>
@@ -589,14 +589,14 @@ function CustomerHub({
       </div>}
 
       {activePanel && (
-        <div className={accountPage ? 'mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:py-12' : 'fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/45 p-0 backdrop-blur-sm sm:items-center sm:p-5'} onMouseDown={!accountPage ? (event) => {
+        <div className={accountPage ? 'customer-hub-shell mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:py-12' : 'fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/45 p-0 backdrop-blur-sm sm:items-center sm:p-5'} onMouseDown={!accountPage ? (event) => {
           if (event.target === event.currentTarget && !busy) {
             setPanel(null);
             if (checkoutItems) onCloseCheckout();
           }
         } : undefined}>
-          <section aria-label={panel === 'notifications' ? 'Product notifications' : panel === 'support' ? 'Customer support chat' : 'Customer account'} aria-modal={accountPage ? undefined : true} role={accountPage ? undefined : 'dialog'} className={accountPage ? 'glass-panel flex min-h-[65vh] w-full flex-col overflow-hidden rounded-[2rem] bg-[#faf9f6] shadow-[0_24px_80px_-40px_rgba(36,53,44,0.3)]' : 'glass-panel flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-[2rem] bg-[#faf9f6] shadow-2xl sm:max-h-[88vh] sm:max-w-2xl sm:rounded-[2rem]'}>
-            <header className="glass-nav flex items-start justify-between gap-4 border-b border-[#e9e6df] px-5 py-4 sm:px-7">
+          <section aria-label={panel === 'notifications' ? 'Product notifications' : panel === 'support' ? 'Customer support chat' : 'Customer account'} aria-modal={accountPage ? undefined : true} role={accountPage ? undefined : 'dialog'} className={accountPage ? 'customer-hub-panel glass-panel backdrop-blur-2xl backdrop-saturate-150 flex min-h-[65vh] w-full flex-col overflow-hidden rounded-[2rem] bg-[#faf9f6] shadow-[0_24px_80px_-40px_rgba(36,53,44,0.3)]' : 'customer-hub-panel glass-panel backdrop-blur-2xl backdrop-saturate-150 flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-[2rem] bg-[#faf9f6] shadow-2xl sm:max-h-[88vh] sm:max-w-2xl sm:rounded-[2rem]'}>
+            <header className="glass-nav backdrop-blur-xl backdrop-saturate-150 flex items-start justify-between gap-4 border-b border-[#e9e6df] px-5 py-4 sm:px-7">
               <div>
                 <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#829078]">{accountPage ? 'Your account' : 'Ittadi customer care'}</p>
                 <h2 className="mt-1 font-serif text-2xl text-[#24352c] sm:text-3xl">
@@ -607,7 +607,7 @@ function CustomerHub({
             </header>
 
             {accountPage && customer && (
-              <section className="glass-panel grid gap-5 rounded-3xl bg-gradient-to-br from-[#eef2eb] via-[#f7f6f2] to-[#f4eadb] px-5 py-6 sm:grid-cols-[1fr_auto] sm:items-center sm:px-8 sm:py-8">
+              <section className="customer-account-hero glass-panel backdrop-blur-2xl backdrop-saturate-150 grid gap-5 rounded-3xl bg-gradient-to-br from-[#eef2eb] via-[#f7f6f2] to-[#f4eadb] px-5 py-6 sm:grid-cols-[1fr_auto] sm:items-center sm:px-8 sm:py-8">
                 <div className="flex min-w-0 items-center gap-4 sm:gap-5">
                   <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[1.7rem] border-4 border-white bg-[#315b45] text-2xl font-bold text-white shadow-lg sm:h-24 sm:w-24">
                     {profile.avatarUrl ? <img src={profile.avatarUrl} alt={`${customer.name}'s profile`} className="h-full w-full object-cover" /> : <span>{initials}</span>}
@@ -620,11 +620,11 @@ function CustomerHub({
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:min-w-64">
-                  <button type="button" onClick={() => { setTab('orders'); void loadOrders(); }} className="rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-left transition hover:bg-white">
+                  <button type="button" onClick={() => { setTab('orders'); void loadOrders(); }} className="customer-profile-tile backdrop-blur-md rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-left transition hover:bg-white">
                     <span className="block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Orders</span>
                     <span className="mt-1 block text-xl font-bold text-[#24352c]">{orders.length}</span>
                   </button>
-                  <div className="rounded-2xl border border-white/80 bg-white/80 px-4 py-3">
+                  <div className="customer-profile-tile backdrop-blur-md rounded-2xl border border-white/80 bg-white/80 px-4 py-3">
                     <span className="block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Account</span>
                     <span className="mt-1 flex items-center gap-1.5 text-sm font-bold text-[#315b45]"><ShieldCheck size={15} /> Active</span>
                   </div>
@@ -846,7 +846,7 @@ function CustomerHub({
                     <div className="space-y-4">
                       <div className="flex items-center justify-between gap-3"><p className="text-xs text-slate-500">Track your recent deliveries and status updates.</p><button type="button" onClick={() => void loadOrders()} className="text-[10px] font-bold text-[#58745d]">Refresh</button></div>
                       {orders.length === 0 ? <div className="py-12 text-center"><PackageCheck className="mx-auto text-[#829078]" size={28} /><p className="mt-3 font-serif text-xl text-[#24352c]">No orders just yet.</p><p className="mt-2 text-xs text-slate-500">Your orders will appear here after checkout.</p></div> : orders.map((order) => (
-                        <article key={order._id} className="glass-panel rounded-2xl p-4 sm:p-5">
+                        <article key={order._id} className="glass-panel backdrop-blur-2xl backdrop-saturate-150 rounded-2xl p-4 sm:p-5">
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#829078]">{order.orderNumber}</p><time className="mt-1 block text-[10px] text-slate-400">{new Date(order.createdAt).toLocaleString()}</time></div>
                             <span className="rounded-full bg-[#eaf0e8] px-3 py-1.5 text-[10px] font-bold text-[#315b45]">{order.status}</span>

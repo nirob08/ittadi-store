@@ -276,8 +276,8 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-[#faf9f6] text-slate-900">
-      <div className="flex w-full flex-wrap items-center justify-between gap-2 bg-[#18251f] px-4 py-2 text-[10px] font-semibold tracking-wide text-white sm:px-7 sm:text-xs">
+    <div className="storefront-shell min-h-screen w-full overflow-x-hidden bg-[#faf9f6] text-slate-900">
+      <div className="announcement-bar flex w-full flex-wrap items-center justify-between gap-2 px-4 py-2 text-[10px] font-semibold tracking-wide text-white sm:px-7 sm:text-xs">
         <a className="underline decoration-white/40 underline-offset-4 hover:text-emerald-200" href="https://wa.me/880153410524?text=Assalamu%20alaikum%2C%20I%20would%20like%20to%20place%20an%20order." target="_blank" rel="noreferrer">
           WhatsApp order: +880 1534-10524
         </a>
@@ -288,7 +288,7 @@ export default function Home() {
         </div>
       </div>
 
-      <header className="glass-nav sticky top-0 z-30 border-b border-[#e9e6df]">
+      <header className="glass-nav backdrop-blur-xl backdrop-saturate-150 sticky top-0 z-30 border-b border-[#e9e6df]">
         <div className="flex w-full flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-8 lg:flex-nowrap lg:px-12 lg:py-4">
           <button
             type="button"
@@ -317,10 +317,10 @@ export default function Home() {
               draggable="false"
               className="h-10 w-10 rounded-xl object-cover shadow-sm transition-transform group-hover:scale-105 sm:h-12 sm:w-12"
             />
-            <span className="text-xl font-black tracking-[0.18em] text-[#24352c] sm:text-2xl">ITTADI</span>
+            <span className="brand-wordmark text-xl font-black tracking-[0.18em] text-[#24352c] sm:text-2xl">ITTADI</span>
           </button>
 
-          <nav aria-label="Main navigation" className="order-3 flex w-full items-center justify-center gap-6 text-xs font-semibold text-slate-600 sm:gap-8 lg:order-none lg:w-auto lg:justify-start lg:text-sm">
+          <nav aria-label="Main navigation" className="main-nav-links order-3 flex w-full items-center justify-center gap-6 text-xs font-semibold text-slate-600 sm:gap-8 lg:order-none lg:w-auto lg:justify-start lg:text-sm">
             <a href="#" className="text-[#315b45] hover:text-[#203c2e]">Home</a>
             <a href="#products" className="hover:text-[#315b45]">Shop</a>
             <a href="#about" className="hover:text-[#315b45]">Our promise</a>
@@ -328,7 +328,7 @@ export default function Home() {
           </nav>
 
           <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3 lg:flex-none">
-            <label className="flex min-w-0 max-w-[260px] flex-1 items-center gap-2 rounded-full border border-[#e9e6df] bg-white px-3 py-2 text-slate-400 shadow-sm sm:px-4 lg:w-60">
+            <label className="glass-control backdrop-blur-xl backdrop-saturate-150 flex min-w-0 max-w-[260px] flex-1 items-center gap-2 rounded-full border border-[#e9e6df] bg-white px-3 py-2 text-slate-400 shadow-sm sm:px-4 lg:w-60">
               <Search size={16} aria-hidden="true" />
               <input
                 type="search"
@@ -344,7 +344,7 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Open customer account"
-              className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e9e6df] bg-white px-3 text-[#315b45] shadow-sm transition hover:border-[#829078] sm:px-4"
+              className="glass-control backdrop-blur-xl backdrop-saturate-150 flex h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e9e6df] bg-white px-3 text-[#315b45] shadow-sm transition hover:border-[#829078] sm:px-4"
             >
               <CircleUserRound size={17} />
               <span className="hidden text-xs font-semibold sm:inline">Account</span>
@@ -368,25 +368,26 @@ export default function Home() {
       </header>
 
       <main>
-        <section className="relative isolate overflow-hidden bg-[#24352c] text-white">
-          <div className="absolute -right-20 top-0 -z-10 h-96 w-96 rounded-full bg-[#a7b49b]/20 blur-3xl" />
-          <div className="absolute -bottom-48 left-0 -z-10 h-96 w-96 rounded-full bg-[#d49a54]/20 blur-3xl" />
-          <div className="grid min-h-[520px] w-full items-center gap-10 px-5 py-20 sm:px-10 md:min-h-[610px] md:grid-cols-[1.05fr_0.95fr] md:py-24 lg:px-16">
+        <section className="hero-stage relative isolate overflow-hidden text-white">
+          <div className="hero-glow hero-glow-a" />
+          <div className="hero-glow hero-glow-b" />
+          <div className="hero-grid-pattern" />
+          <div className="grid min-h-[560px] w-full items-center gap-12 px-5 py-16 sm:px-10 md:min-h-[650px] md:grid-cols-[1.05fr_0.95fr] md:py-20 lg:px-16">
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#d9c7a6] sm:text-xs">
+              <span className="hero-eyebrow backdrop-blur-md inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#d9c7a6] sm:text-xs">
                 <Sparkles size={14} /> Little things, lovely living
               </span>
-              <h1 className="mt-7 text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+              <h1 className="hero-title mt-7 text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
                 Make room for
                 <span className="mt-1 block font-serif italic text-[#d9c7a6]">a little wonder.</span>
               </h1>
-              <p className="mt-6 max-w-lg text-sm leading-7 text-white/70 sm:text-base">
+              <p className="hero-copy mt-6 max-w-lg text-sm leading-7 text-white/70 sm:text-base">
                 Find considered gifts, charming home details, and everyday delights chosen to make your space feel more like you.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                 <a
                   href="#products"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#d9c7a6] px-7 py-3.5 text-sm font-bold text-[#24352c] transition hover:bg-white"
+                  className="hero-primary-cta inline-flex items-center justify-center gap-2 rounded-full bg-[#d9c7a6] px-7 py-3.5 text-sm font-bold text-[#24352c] transition hover:bg-white"
                 >
                   Explore the collection <ArrowRight size={16} />
                 </a>
@@ -394,7 +395,7 @@ export default function Home() {
                   href="https://wa.me/880153410524?text=Assalamu%20alaikum%2C%20I%20would%20like%20to%20place%20an%20order."
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
+                  className="hero-secondary-cta inline-flex items-center justify-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
                 >
                   <Phone size={16} /> WhatsApp to order
                 </a>
@@ -404,42 +405,48 @@ export default function Home() {
                 Thoughtfully picked for your home
               </div>
             </div>
-            <div className="relative mx-auto flex aspect-[4/3] w-full max-w-xl items-center justify-center overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#687967] via-[#d0b998] to-[#e9dfcf] shadow-2xl md:aspect-[5/4]">
-              <div className="absolute inset-4 rounded-[1.5rem] border border-white/40" />
-              <div className="relative flex h-[78%] w-[75%] flex-col items-center justify-center rounded-[48%_48%_18%_18%] bg-[#f2eadc]/70 shadow-[0_30px_70px_rgba(26,35,27,0.2)] backdrop-blur-sm">
-                <Sparkles className="h-16 w-16 text-[#315b45] sm:h-20 sm:w-20" strokeWidth={1.2} />
-                <span className="mt-5 font-serif text-3xl italic text-[#315b45] sm:text-4xl">Ittadi</span>
-                <span className="mt-2 text-[9px] font-bold uppercase tracking-[0.35em] text-[#687967]">A lovely little find</span>
+            <div className="hero-showcase relative mx-auto flex aspect-[4/3] w-full max-w-xl items-center justify-center md:aspect-[5/4]">
+              <div className="showcase-orbit showcase-orbit-outer" />
+              <div className="showcase-orbit showcase-orbit-inner" />
+              <div className="showcase-glass-card backdrop-blur-2xl backdrop-saturate-150">
+                <span className="showcase-overline">CURATED WITH CARE</span>
+                <div className="showcase-emblem"><Sparkles className="h-14 w-14 sm:h-16 sm:w-16" strokeWidth={1.1} /></div>
+                <span className="showcase-brand">Ittadi</span>
+                <span className="showcase-caption">A LOVELY LITTLE FIND</span>
+                <span className="showcase-card-index">01 — 05</span>
               </div>
-              <div className="absolute bottom-7 left-7 rounded-2xl bg-white/85 px-4 py-3 text-[#24352c] shadow-lg backdrop-blur">
-                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#687967]">Make it yours</p>
-                <p className="mt-1 font-serif text-lg">The joy is in the details</p>
+              <div className="showcase-float backdrop-blur-xl showcase-float-top"><span className="showcase-float-dot" /> Thoughtful finds, always</div>
+              <div className="showcase-float backdrop-blur-xl showcase-float-bottom">
+                <span className="showcase-float-icon"><Sparkles size={16} /></span>
+                <span><strong>Make it yours</strong><small>The joy is in the details</small></span>
               </div>
+              <div className="showcase-sparkle showcase-sparkle-one">✳</div>
+              <div className="showcase-sparkle showcase-sparkle-two">✦</div>
             </div>
           </div>
         </section>
 
-        <section id="about" className="border-b border-[#e9e6df] bg-white">
-          <div className="grid w-full grid-cols-1 divide-y divide-[#e9e6df] px-5 py-6 sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:px-10 lg:px-16">
-            <div className="flex items-center gap-4 px-2 py-4 sm:px-6 sm:py-2">
+        <section id="about" className="feature-strip-shell relative z-10 -mt-2 px-4 sm:px-8 lg:px-12">
+          <div className="feature-strip backdrop-blur-2xl backdrop-saturate-150 grid w-full grid-cols-1 divide-y divide-[#e9e6df] px-5 py-3 sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:px-7">
+            <div className="flex items-center gap-4 px-2 py-4 sm:px-5 sm:py-3">
               <Truck className="shrink-0 text-[#58745d]" size={22} />
               <div><h2 className="text-sm font-bold">Delivery nationwide</h2><p className="mt-1 text-xs text-slate-500">From our door to yours</p></div>
             </div>
-            <div className="flex items-center gap-4 px-2 py-4 sm:px-6 sm:py-2">
+            <div className="flex items-center gap-4 px-2 py-4 sm:px-5 sm:py-3">
               <ShieldCheck className="shrink-0 text-[#58745d]" size={22} />
               <div><h2 className="text-sm font-bold">Carefully selected</h2><p className="mt-1 text-xs text-slate-500">Quality in every little detail</p></div>
             </div>
-            <div className="flex items-center gap-4 px-2 py-4 sm:px-6 sm:py-2">
+            <div className="flex items-center gap-4 px-2 py-4 sm:px-5 sm:py-3">
               <Headphones className="shrink-0 text-[#58745d]" size={22} />
               <div><h2 className="text-sm font-bold">Here to help</h2><p className="mt-1 text-xs text-slate-500">Friendly support when you need us</p></div>
             </div>
           </div>
         </section>
 
-        <section id="products" className="w-full px-5 py-16 sm:px-10 sm:py-20 lg:px-16">
+        <section id="products" className="collection-section w-full px-5 py-16 sm:px-10 sm:py-20 lg:px-16">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#829078]">A little something for everyone</span>
+              <span className="section-eyebrow text-[10px] font-bold uppercase tracking-[0.24em] text-[#829078]">A little something for everyone</span>
               <h2 className="mt-3 font-serif text-4xl text-[#24352c] sm:text-5xl">The collection</h2>
             </div>
             <p className="max-w-md text-sm leading-6 text-slate-500">
@@ -454,7 +461,7 @@ export default function Home() {
                 key={item}
                 onClick={() => setCategory(item)}
                 aria-pressed={category === item}
-                className={`shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition ${
+                className={`category-pill backdrop-blur-sm shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition ${
                   category === item
                     ? 'border-[#24352c] bg-[#24352c] text-white'
                     : 'border-[#e5e2dc] bg-white text-slate-600 hover:border-[#829078] hover:text-[#24352c]'
@@ -480,7 +487,7 @@ export default function Home() {
           {loading ? (
             <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {[1, 2, 3, 4].map((item) => (
-                <div key={item} className="aspect-[4/5] animate-pulse rounded-2xl bg-[#eeece6]" />
+                <div key={item} className="premium-card backdrop-blur-xl backdrop-saturate-150 aspect-[4/5] animate-pulse rounded-2xl bg-[#eeece6]" />
               ))}
             </div>
           ) : visibleProducts.length === 0 ? (
@@ -501,12 +508,12 @@ export default function Home() {
               )}
             </div>
           ) : (
-            <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10">
+            <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-8">
               {visibleProducts.map((product) => (
-                <article key={product._id} className="premium-card group min-w-0 overflow-hidden p-2 sm:p-3">
-                  <div className="relative aspect-[4/4.7] overflow-hidden rounded-2xl bg-[#eeece6]">
+                <article key={product._id} className="premium-card backdrop-blur-xl backdrop-saturate-150 product-card group min-w-0 overflow-hidden p-2 sm:p-3">
+                  <div className="product-image-frame relative aspect-[4/4.7] overflow-hidden rounded-2xl bg-[#eeece6]">
                     {product.badge && (
-                      <span className="absolute left-3 top-3 z-10 rounded-full bg-white/90 px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-[#315b45] shadow-sm">
+                      <span className="product-badge backdrop-blur-md absolute left-3 top-3 z-10 rounded-full bg-white/90 px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-[#315b45] shadow-sm">
                         {product.badge}
                       </span>
                     )}
@@ -524,7 +531,7 @@ export default function Home() {
                       </div>
                     )}
                   </div>
-                  <div className="px-1 pt-4">
+                  <div className="product-card-info px-1 pt-4">
                     <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#829078]">{product.category}</p>
                     <h3 className="mt-1.5 line-clamp-2 min-h-10 text-sm font-semibold text-[#24352c] sm:text-base">
                       <button type="button" onClick={() => openProduct(product)} className="text-left hover:text-[#58745d]">{product.name}</button>
@@ -617,7 +624,7 @@ export default function Home() {
             if (event.target === event.currentTarget && !adminLoginPending) setAdminLoginOpen(false);
           }}
         >
-          <section aria-label="Admin sign in" aria-modal="true" role="dialog" className="glass-panel w-full max-w-sm rounded-3xl p-6 shadow-2xl sm:p-8">
+          <section aria-label="Admin sign in" aria-modal="true" role="dialog" className="glass-panel backdrop-blur-2xl backdrop-saturate-150 w-full max-w-sm rounded-3xl p-6 shadow-2xl sm:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#829078]">Private workspace</p>
@@ -665,7 +672,7 @@ export default function Home() {
           if (event.target === event.currentTarget) setCartOpen(false);
         }}>
           <div className="absolute inset-0 bg-slate-950/45 backdrop-blur-sm" />
-          <section aria-label="Shopping bag" aria-modal="true" role="dialog" className="glass-panel relative flex h-full w-full max-w-md flex-col bg-[#faf9f6] shadow-2xl">
+          <section aria-label="Shopping bag" aria-modal="true" role="dialog" className="glass-panel backdrop-blur-2xl backdrop-saturate-150 relative flex h-full w-full max-w-md flex-col bg-[#faf9f6] shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#e9e6df] px-6 py-5">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#829078]">Your picks</p>
