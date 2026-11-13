@@ -39,6 +39,8 @@ const OrderSchema = new mongoose.Schema(
     paymentValidationId: { type: String, trim: true, maxlength: 100, default: '' },
     paidAt: { type: Date },
     status: { type: String, enum: ORDER_STATUSES, default: 'Placed' },
+    currentLocation: { type: String, trim: true, maxlength: 160, default: '' },
+    trackingNote: { type: String, trim: true, maxlength: 500, default: '' },
     statusHistory: [
       {
         status: { type: String, enum: ORDER_STATUSES, required: true },

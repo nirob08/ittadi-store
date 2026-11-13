@@ -8,19 +8,42 @@ import Order from '@/models/Order';
 import Review from '@/models/Review';
 
 function validateProduct(body) {
+  if (
+    (body?.video != null && typeof body.video !== 'string') ||
+    (body?.videoUrl != null && typeof body.videoUrl !== 'string') ||
+    (body?.description != null && typeof body.description !== 'string') ||
+    (body?.specifications != null && typeof body.specifications !== 'string')
+  ) {
+    return null;
+  }
   const name = typeof body?.name === 'string' ? body.name.trim() : '';
   const category = typeof body?.category === 'string' ? body.category.trim() : '';
+  if (
+    (body?.image != null && typeof body.image !== 'string') ||
+    (body?.images != null && (!Array.isArray(body.images) || body.images.length > 8 || body.images.some((item) => typeof item !== 'string')))
+  ) {
+    return null;
+  }
   const image = typeof body?.image === 'string' ? body.image.trim() : '';
-  const video = typeof body?.video === 'string' ? body.video.trim() : '';
+  const requestedImages = Array.isArray(body?.images) ? body.images : [];
+  const images = [...new Set(requestedImages
+    .filter((item) => typeof item === 'string')
+    .map((item) => item.trim())
+    .filter(Boolean))];
+  if (image && !images.includes(image)) images.unshift(image);
+  const videoUrl = typeof (body?.videoUrl ?? body?.video) === 'string'
+    ? (body.videoUrl ?? body.video).trim()
+    : '';
   const description = typeof body?.description === 'string' ? body.description.trim() : '';
+  const specifications = typeof body?.specifications === 'string' ? body.specifications.trim() : '';
   const price = Number(body?.price);
   const oldPrice = body?.oldPrice === '' || body?.oldPrice == null ? undefined : Number(body.oldPrice);
   const stock = body?.stock === '' || body?.stock == null ? 10 : Number(body.stock);
-  const validImage =
-    (image.startsWith('/') && !image.startsWith('//')) ||
+  const validImage = (value) =>
+    (value.startsWith('/') && !value.startsWith('//')) ||
     (() => {
       try {
-        return new URL(image).protocol === 'https:';
+        return new URL(value).protocol === 'https:';
       } catch {
         return false;
       }
@@ -31,20 +54,23 @@ function validateProduct(body) {
     name.length > 120 ||
     !category ||
     category.length > 80 ||
+    images.length < 1 ||
+    images.length > 8 ||
+    images.some((value) => value.length > 2000 || !validImage(value)) ||
     !Number.isFinite(price) ||
     price <= 0 ||
     (oldPrice !== undefined && (!Number.isFinite(oldPrice) || oldPrice <= price)) ||
     !Number.isInteger(stock) ||
     stock < 0 ||
     description.length > 2000 ||
-    video.length > 2000 ||
-    !validImage
+    specifications.length > 4000 ||
+    videoUrl.length > 2000
   ) {
     return null;
   }
-  if (video) {
+  if (videoUrl) {
     try {
-      if (new URL(video).protocol !== 'https:') return null;
+      if (new URL(videoUrl).protocol !== 'https:') return null;
     } catch {
       return null;
     }
@@ -55,9 +81,12 @@ function validateProduct(body) {
     category,
     price,
     ...(oldPrice === undefined ? {} : { oldPrice }),
-    image,
+    image: images[0],
+    images,
     description,
-    video,
+    video: videoUrl,
+    videoUrl,
+    specifications,
     ...(typeof body.badge === 'string' && body.badge.trim()
       ? { badge: body.badge.trim().slice(0, 40) }
       : { badge: '' }),
@@ -77,6 +106,8 @@ export async function GET() {
       success: true,
       data: products.map((product) => ({
         ...product,
+        images: product.images?.length ? product.images : [product.image],
+        videoUrl: product.videoUrl || product.video || '',
         stock: product.stock ?? 10,
         ratingAverage: ratingByProductId.get(String(product._id))?.average || 0,
         reviewCount: ratingByProductId.get(String(product._id))?.count || 0,

@@ -22,7 +22,22 @@ export async function PATCH(request) {
   const status = typeof body?.status === 'string' ? body.status : '';
   const note = typeof body?.note === 'string' ? body.note.trim().slice(0, 300) : '';
   const verifyingPayment = action === 'verify-payment';
-  if (!/^[a-f\d]{24}$/i.test(orderId) || (!verifyingPayment && !ORDER_STATUSES.includes(status))) {
+  const updatingTracking = action === 'update-tracking';
+  const currentLocation = typeof body?.currentLocation === 'string' ? body.currentLocation.trim() : '';
+  const trackingNote = typeof body?.trackingNote === 'string' ? body.trackingNote.trim() : '';
+  if (
+    updatingTracking &&
+    ((body?.currentLocation != null && typeof body.currentLocation !== 'string') ||
+      (body?.trackingNote != null && typeof body.trackingNote !== 'string') ||
+      currentLocation.length > 160 ||
+      trackingNote.length > 500)
+  ) {
+    return NextResponse.json({ error: 'Location must be 160 characters or fewer and tracking updates 500 characters or fewer.' }, { status: 400 });
+  }
+  if (
+    !/^[a-f\d]{24}$/i.test(orderId) ||
+    (!verifyingPayment && !updatingTracking && !ORDER_STATUSES.includes(status))
+  ) {
     return NextResponse.json({ error: 'Provide a valid order and delivery status.' }, { status: 400 });
   }
 
@@ -37,6 +52,13 @@ export async function PATCH(request) {
           const missingOrder = new Error('Order not found.');
           missingOrder.status = 404;
           throw missingOrder;
+        }
+        if (updatingTracking) {
+          order.currentLocation = currentLocation;
+          order.trackingNote = trackingNote;
+          await order.save({ session });
+          updatedOrder = order.toObject();
+          return;
         }
         if (verifyingPayment) {
           const manualPayment = order.paymentMethod === 'Manual bKash' || order.paymentMethod === 'Manual Nagad';

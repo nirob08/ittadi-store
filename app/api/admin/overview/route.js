@@ -15,7 +15,7 @@ export async function GET(request) {
   try {
     await dbConnect();
     const [customers, orders, unreadMessages, reviews] = await Promise.all([
-      Customer.find({}).select('name email phone address location createdAt').sort({ createdAt: -1 }).limit(500).lean(),
+      Customer.find({}).select('name email phone address location createdAt').sort({ createdAt: -1 }).lean(),
       Order.find({}).sort({ createdAt: -1 }).limit(200).lean(),
       SupportMessage.find({ readByAdmin: false }).sort({ createdAt: 1 }).limit(300).lean(),
       Review.find({})

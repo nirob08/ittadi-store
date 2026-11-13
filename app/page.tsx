@@ -14,7 +14,6 @@ import {
   Minus,
   Phone,
   Plus,
-  Play,
   Search,
   ShieldCheck,
   Star,
@@ -25,6 +24,7 @@ import {
   X,
 } from 'lucide-react';
 import CustomerHub from '@/app/components/customer-hub';
+import ThemeToggle from '@/app/components/theme-toggle';
 import { sampleProducts as sampleProductData } from '@/lib/sample-products';
 
 type Product = {
@@ -52,15 +52,6 @@ const sampleProducts: Product[] = sampleProductData.map((product, index) => ({
   ratingAverage: 0,
   reviewCount: 0,
 }));
-type ProductReview = {
-  _id: string;
-  rating: number;
-  comment: string;
-  createdAt: string;
-  customerName: string;
-  verifiedPurchase: boolean;
-};
-
 const categories = [
   'Aesthetic Light',
   'Artificial Flower',
@@ -84,13 +75,6 @@ export default function Home() {
   const [adminPassword, setAdminPassword] = useState('');
   const [adminLoginError, setAdminLoginError] = useState('');
   const [adminLoginPending, setAdminLoginPending] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [productReviews, setProductReviews] = useState<ProductReview[]>([]);
-  const [reviewSummary, setReviewSummary] = useState({ average: 0, count: 0 });
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState('');
-  const [reviewError, setReviewError] = useState('');
-  const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [checkoutItems, setCheckoutItems] = useState<{
     productId: string;
     quantity: number;
@@ -192,26 +176,6 @@ export default function Home() {
     return () => window.clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    if (!selectedProduct || selectedProduct.isSample) return undefined;
-    let active = true;
-    fetch(`/api/products/${selectedProduct._id}/reviews`, { cache: 'no-store' })
-      .then(async (response) => {
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Reviews could not be loaded.');
-        if (active) {
-          setProductReviews(result.reviews);
-          setReviewSummary(result.summary);
-        }
-      })
-      .catch((error: unknown) => {
-        if (active) setReviewError(error instanceof Error ? error.message : 'Reviews could not be loaded.');
-      });
-    return () => {
-      active = false;
-    };
-  }, [selectedProduct]);
-
   const visibleProducts = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
     const displayProducts = products.length > 0 ? products : sampleProducts;
@@ -275,38 +239,7 @@ export default function Home() {
   };
 
   const openProduct = (product: Product) => {
-    setProductReviews([]);
-    setReviewSummary({ average: product.ratingAverage || 0, count: product.reviewCount || 0 });
-    setReviewRating(5);
-    setReviewComment('');
-    setReviewError('');
-    setSelectedProduct(product);
-  };
-
-  const submitProductReview = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!selectedProduct || selectedProduct.isSample) return;
-    setReviewSubmitting(true);
-    setReviewError('');
-    try {
-      const response = await fetch(`/api/products/${selectedProduct._id}/reviews`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating: reviewRating, comment: reviewComment }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Your review could not be submitted.');
-      setProductReviews((current) => [result.review, ...current]);
-      setReviewSummary(result.summary);
-      setProducts((current) => current.map((product) => product._id === selectedProduct._id
-        ? { ...product, ratingAverage: result.summary.average, reviewCount: result.summary.count }
-        : product));
-      setReviewComment('');
-    } catch (error) {
-      setReviewError(error instanceof Error ? error.message : 'Your review could not be submitted.');
-    } finally {
-      setReviewSubmitting(false);
-    }
+    router.push(`/product/${product._id}`);
   };
 
   const openAdmin = () => {
@@ -355,7 +288,7 @@ export default function Home() {
         </div>
       </div>
 
-      <header className="sticky top-0 z-30 border-b border-[#e9e6df] bg-[#faf9f6]/95 backdrop-blur-xl">
+      <header className="glass-nav sticky top-0 z-30 border-b border-[#e9e6df]">
         <div className="flex w-full flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-8 lg:flex-nowrap lg:px-12 lg:py-4">
           <button
             type="button"
@@ -416,6 +349,7 @@ export default function Home() {
               <CircleUserRound size={17} />
               <span className="hidden text-xs font-semibold sm:inline">Account</span>
             </Link>
+            <ThemeToggle />
             <button
               type="button"
               onClick={() => setCartOpen(true)}
@@ -569,7 +503,7 @@ export default function Home() {
           ) : (
             <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10">
               {visibleProducts.map((product) => (
-                <article key={product._id} className="group min-w-0">
+                <article key={product._id} className="premium-card group min-w-0 overflow-hidden p-2 sm:p-3">
                   <div className="relative aspect-[4/4.7] overflow-hidden rounded-2xl bg-[#eeece6]">
                     {product.badge && (
                       <span className="absolute left-3 top-3 z-10 rounded-full bg-white/90 px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-[#315b45] shadow-sm">
@@ -638,84 +572,6 @@ export default function Home() {
         </section>
       </main>
 
-      {selectedProduct && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-6" role="presentation" onMouseDown={(event) => {
-          if (event.target === event.currentTarget) setSelectedProduct(null);
-        }}>
-          <section aria-label={`${selectedProduct.name} details`} aria-modal="true" role="dialog" className="relative max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-3xl bg-[#faf9f6] shadow-2xl">
-            <button type="button" onClick={() => setSelectedProduct(null)} aria-label="Close product details" className="absolute right-4 top-4 z-10 rounded-full bg-white/95 p-2 text-[#24352c] shadow"><X size={18} /></button>
-            <div className="grid gap-6 p-5 sm:p-8 lg:grid-cols-[0.95fr_1.05fr]">
-              <div>
-                <div className="aspect-square overflow-hidden rounded-2xl bg-[#eeece6]">
-                  <img src={selectedProduct.image} alt={selectedProduct.name} className="h-full w-full object-cover" />
-                </div>
-                {selectedProduct.video && <ProductVideo url={selectedProduct.video} title={`${selectedProduct.name} product video`} />}
-              </div>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#829078]">{selectedProduct.category}</p>
-                <h2 className="mt-2 pr-8 font-serif text-3xl text-[#24352c] sm:text-4xl">{selectedProduct.name}</h2>
-                <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <span className="text-xl font-bold text-[#315b45]">৳ {selectedProduct.price}</span>
-                  {selectedProduct.oldPrice && selectedProduct.oldPrice > selectedProduct.price && <span className="text-sm text-slate-400 line-through">৳ {selectedProduct.oldPrice}</span>}
-                  <span className="text-xs text-slate-500">{selectedProduct.isSample ? 'Stock set when published' : selectedProduct.stock > 0 ? `${selectedProduct.stock} in stock` : 'Sold out'}</span>
-                </div>
-                <div className="mt-3 flex items-center gap-2 text-xs text-slate-600">
-                  <span className="flex" aria-label={`${reviewSummary.average.toFixed(1)} out of 5 stars`}>
-                    {[1, 2, 3, 4, 5].map((star) => <Star key={star} size={15} className={star <= Math.round(reviewSummary.average) ? 'fill-[#d49a54] text-[#d49a54]' : 'text-slate-300'} />)}
-                  </span>
-                  {reviewSummary.count ? `${reviewSummary.average.toFixed(1)} · ${reviewSummary.count} customer reviews` : 'No reviews yet'}
-                </div>
-                {selectedProduct.description && <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-slate-600">{selectedProduct.description}</p>}
-                {selectedProduct.isSample ? (
-                  <p className="mt-5 rounded-xl bg-[#f0eee8] p-3 text-xs leading-5 text-slate-600">This is a preview listing, not yet linked to live stock. Publish the sample catalog from the Admin panel before accepting orders.</p>
-                ) : (
-                  <div className="mt-5 flex gap-2">
-                    <button type="button" disabled={selectedProduct.stock <= 0} onClick={() => updateCart(selectedProduct._id, 1)} className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[#d9d5cc] px-4 py-3 text-xs font-bold text-[#315b45] disabled:opacity-40"><Plus size={14} /> Add to bag</button>
-                    <button type="button" disabled={selectedProduct.stock <= 0} onClick={() => { startCheckout([selectedProduct], { [selectedProduct._id]: 1 }); setSelectedProduct(null); }} className="flex-1 rounded-full bg-[#24352c] px-4 py-3 text-xs font-bold text-white disabled:opacity-40">Buy now</button>
-                  </div>
-                )}
-
-                <section className="mt-7 border-t border-[#e9e6df] pt-5">
-                  <h3 className="font-serif text-xl text-[#24352c]">Customer reviews</h3>
-                  <p className="mt-1 text-[11px] text-slate-500">Reviews are available to customers with a delivered order.</p>
-                  {reviewError && <p role="alert" className="mt-3 rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700">{reviewError}</p>}
-                  {!selectedProduct.isSample && (
-                    <form onSubmit={submitProductReview} className="mt-4 rounded-2xl bg-white p-4">
-                      <label className="text-xs font-semibold text-[#47564b]">Your rating</label>
-                      <div className="mt-2 flex gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <button key={star} type="button" aria-label={`Rate ${star} star${star === 1 ? '' : 's'}`} aria-pressed={reviewRating === star} onClick={() => setReviewRating(star)} className="rounded p-1">
-                            <Star size={19} className={star <= reviewRating ? 'fill-[#d49a54] text-[#d49a54]' : 'text-slate-300'} />
-                          </button>
-                        ))}
-                      </div>
-                      <textarea required minLength={3} maxLength={1000} value={reviewComment} onChange={(event) => setReviewComment(event.target.value)} rows={3} className="mt-3 w-full resize-y rounded-xl border border-[#e5e2dc] bg-[#faf9f6] px-3 py-2.5 text-xs outline-none focus:border-[#58745d]" placeholder="Share your experience (after delivery)" />
-                      <button type="submit" disabled={reviewSubmitting} className="mt-2 rounded-full bg-[#24352c] px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50">{reviewSubmitting ? 'Submitting…' : 'Submit verified review'}</button>
-                      <Link href="/account" target="_blank" rel="noopener noreferrer" className="ml-3 text-[10px] font-semibold text-[#58745d] underline">Sign in</Link>
-                    </form>
-                  )}
-                  <div className="mt-4 space-y-3">
-                    {productReviews.length === 0 && !reviewError && <p className="rounded-xl bg-white p-4 text-xs text-slate-500">Be the first to share feedback after your order is delivered.</p>}
-                    {productReviews.map((review) => (
-                      <article key={review._id} className="rounded-xl bg-white p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <p className="text-xs font-bold text-[#24352c]">{review.customerName}</p>
-                          <span className="flex shrink-0" aria-label={`${review.rating} out of 5 stars`}>
-                            {[1, 2, 3, 4, 5].map((star) => <Star key={star} size={12} className={star <= review.rating ? 'fill-[#d49a54] text-[#d49a54]' : 'text-slate-300'} />)}
-                          </span>
-                        </div>
-                        <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-slate-600">{review.comment}</p>
-                        <p className="mt-2 text-[9px] text-[#58745d]">Verified purchase · {new Date(review.createdAt).toLocaleDateString()}</p>
-                      </article>
-                    ))}
-                  </div>
-                </section>
-              </div>
-            </div>
-          </section>
-        </div>
-      )}
-
       <footer id="contact" className="bg-[#1e2d25] text-white">
         <div className="grid w-full gap-10 px-5 py-12 sm:grid-cols-2 sm:px-10 lg:grid-cols-[1.3fr_0.7fr_1fr] lg:px-16 lg:py-16">
           <div>
@@ -761,7 +617,7 @@ export default function Home() {
             if (event.target === event.currentTarget && !adminLoginPending) setAdminLoginOpen(false);
           }}
         >
-          <section aria-label="Admin sign in" aria-modal="true" role="dialog" className="w-full max-w-sm rounded-3xl border border-[#e9e6df] bg-[#faf9f6] p-6 shadow-2xl sm:p-8">
+          <section aria-label="Admin sign in" aria-modal="true" role="dialog" className="glass-panel w-full max-w-sm rounded-3xl p-6 shadow-2xl sm:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#829078]">Private workspace</p>
@@ -809,7 +665,7 @@ export default function Home() {
           if (event.target === event.currentTarget) setCartOpen(false);
         }}>
           <div className="absolute inset-0 bg-slate-950/45 backdrop-blur-sm" />
-          <section aria-label="Shopping bag" aria-modal="true" role="dialog" className="relative flex h-full w-full max-w-md flex-col bg-[#faf9f6] shadow-2xl">
+          <section aria-label="Shopping bag" aria-modal="true" role="dialog" className="glass-panel relative flex h-full w-full max-w-md flex-col bg-[#faf9f6] shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#e9e6df] px-6 py-5">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#829078]">Your picks</p>
@@ -904,32 +760,4 @@ function InstagramIcon() {
       <circle cx="17.7" cy="6.7" r="0.8" fill="currentColor" stroke="none" />
     </svg>
   );
-}
-
-function ProductVideo({ url, title }: { url: string; title: string }) {
-  let parsedUrl: URL;
-  try {
-    parsedUrl = new URL(url);
-  } catch {
-    return null;
-  }
-
-  const youtubeId = parsedUrl.hostname === 'youtu.be'
-    ? parsedUrl.pathname.slice(1)
-    : parsedUrl.hostname.endsWith('youtube.com')
-      ? parsedUrl.searchParams.get('v') || parsedUrl.pathname.match(/\/(?:shorts|embed)\/([^/]+)/)?.[1]
-      : '';
-  const vimeoId = parsedUrl.hostname === 'vimeo.com'
-    ? parsedUrl.pathname.split('/').filter(Boolean).at(-1)
-    : '';
-  if (youtubeId) {
-    return <iframe title={title} src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(youtubeId)}`} className="mt-4 aspect-video w-full rounded-2xl bg-black" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />;
-  }
-  if (vimeoId && /^\d+$/.test(vimeoId)) {
-    return <iframe title={title} src={`https://player.vimeo.com/video/${vimeoId}`} className="mt-4 aspect-video w-full rounded-2xl bg-black" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />;
-  }
-  if (/\.(mp4|webm|ogg)$/i.test(parsedUrl.pathname)) {
-    return <video title={title} src={url} controls preload="metadata" className="mt-4 aspect-video w-full rounded-2xl bg-black" />;
-  }
-  return <a href={url} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#d9d5cc] px-4 py-2 text-xs font-semibold text-[#315b45]"><Play size={14} /> Open product video</a>;
 }

@@ -4,7 +4,7 @@ import { isAdminRequest } from '@/lib/admin-auth';
 import dbConnect from '@/lib/mongodb';
 import { detectProductImageType, productImageExtension, productMediaBucket } from '@/lib/product-media';
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 4 * 1024 * 1024;
 
 export async function POST(request) {
   if (!isAdminRequest(request)) {
@@ -22,7 +22,7 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Choose a JPEG, PNG or WebP image to upload.' }, { status: 400 });
   }
   if (file.size < 1 || file.size > MAX_IMAGE_SIZE) {
-    return NextResponse.json({ error: 'Product images must be smaller than 5 MB.' }, { status: 400 });
+    return NextResponse.json({ error: 'Product images must be smaller than 4 MB.' }, { status: 400 });
   }
 
   try {

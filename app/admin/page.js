@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { nextOrderStatuses } from '@/lib/order-workflow';
-import { ArrowLeft, Check, ImagePlus, LogOut, MessageCircle, PackagePlus, Pencil, RefreshCw, ShieldCheck, Trash2, Truck, Users, X } from 'lucide-react';
+import ThemeToggle from '@/app/components/theme-toggle';
+import { ArrowLeft, Check, ImagePlus, LogOut, MapPin, MessageCircle, PackagePlus, Pencil, RefreshCw, ShieldCheck, Trash2, Truck, Users, X } from 'lucide-react';
 
 const initialForm = {
   name: '',
@@ -11,8 +12,10 @@ const initialForm = {
   price: '',
   oldPrice: '',
   image: '',
-  video: '',
+  images: [],
+  videoUrl: '',
   description: '',
+  specifications: '',
   badge: '',
   stock: '10',
 };
@@ -34,6 +37,11 @@ export default function AdminPanel() {
   const [formData, setFormData] = useState(initialForm);
   const [editingProductId, setEditingProductId] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [trackingEdits, setTrackingEdits] = useState({});
+  const [savingTrackingId, setSavingTrackingId] = useState('');
+  const [customerDetail, setCustomerDetail] = useState(null);
+  const [customerDetailLoading, setCustomerDetailLoading] = useState(false);
+  const [deletingCustomerId, setDeletingCustomerId] = useState('');
   const [publishingSamples, setPublishingSamples] = useState(false);
   const [sampleStock, setSampleStock] = useState('10');
   const [password, setPassword] = useState('');
@@ -174,7 +182,12 @@ export default function AdminPanel() {
       const response = await fetch('/api/products', {
         method: editingProductId ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingProductId ? { ...formData, id: editingProductId } : formData),
+        body: JSON.stringify({
+          ...formData,
+          image: formData.images[0] || formData.image,
+          images: [...new Set([formData.image, ...formData.images].filter(Boolean))],
+          ...(editingProductId ? { id: editingProductId } : {}),
+        }),
       });
       const result = await response.json();
       if (response.status === 401) {
@@ -204,31 +217,45 @@ export default function AdminPanel() {
     }
   };
 
-  const uploadProductImage = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const uploadProductImages = async (event) => {
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
     setError('');
     setMessage('');
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Product images must be smaller than 5 MB.');
+    if ((formData.images?.length || 0) + files.length > 8) {
+      setError('A product can have up to 8 images. Remove an image before adding more.');
+      event.target.value = '';
+      return;
+    }
+    if (files.some((file) => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size < 1 || file.size > 4 * 1024 * 1024)) {
+      setError('Choose JPEG, PNG or WebP product images smaller than 4 MB each.');
       event.target.value = '';
       return;
     }
 
     setUploadingImage(true);
     try {
-      const uploadData = new FormData();
-      uploadData.append('image', file);
-      const response = await fetch('/api/admin/media', { method: 'POST', body: uploadData });
-      const result = await response.json();
-      if (response.status === 401) {
-        setAuthenticated(false);
-        setError('Your admin session expired. Please sign in again.');
-        return;
+      const uploadedImages = [];
+      for (const file of files) {
+        const uploadData = new FormData();
+        uploadData.append('image', file);
+        const response = await fetch('/api/admin/media', { method: 'POST', body: uploadData });
+        const result = await response.json();
+        if (response.status === 401) {
+          setAuthenticated(false);
+          setError('Your admin session expired. Please sign in again.');
+          return;
+        }
+        if (!response.ok || !result.success || typeof result.image !== 'string') {
+          throw new Error(result.error || 'Product image could not be uploaded.');
+        }
+        uploadedImages.push(result.image);
       }
-      if (!response.ok || !result.success) throw new Error(result.error || 'Product image could not be uploaded.');
-      setFormData((current) => ({ ...current, image: result.image }));
-      setMessage('Product image uploaded. Save the product to publish the change.');
+      setFormData((current) => {
+        const images = [...new Set([...(current.images || []), ...uploadedImages])];
+        return { ...current, images, image: current.image || images[0] };
+      });
+      setMessage(`${uploadedImages.length} product image(s) uploaded. Save the product to publish the change.`);
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : 'Product image could not be uploaded.');
     } finally {
@@ -281,8 +308,10 @@ export default function AdminPanel() {
       price: String(product.price),
       oldPrice: product.oldPrice == null ? '' : String(product.oldPrice),
       image: product.image,
-      video: product.video || '',
+      images: product.images?.length ? product.images : [product.image],
+      videoUrl: product.videoUrl || product.video || '',
       description: product.description || '',
+      specifications: product.specifications || '',
       badge: product.badge || '',
       stock: String(product.stock ?? 10),
     });
@@ -292,6 +321,11 @@ export default function AdminPanel() {
   const cancelProductEdit = () => {
     setEditingProductId('');
     setFormData(initialForm);
+  };
+
+  const removeProductImage = (image) => {
+    const images = formData.images.filter((item) => item !== image);
+    setFormData((current) => ({ ...current, images, image: images[0] || '' }));
   };
 
   const deleteProduct = async (product) => {
@@ -380,6 +414,82 @@ export default function AdminPanel() {
     }
   };
 
+  const updateOrderTracking = async (orderId) => {
+    const order = orders.find((item) => item._id === orderId);
+    if (!order) return;
+    const tracking = trackingEdits[orderId] || {};
+    const currentLocation = tracking.currentLocation ?? order.currentLocation ?? '';
+    const trackingNote = tracking.trackingNote ?? order.trackingNote ?? '';
+    setSavingTrackingId(orderId);
+    setError('');
+    setMessage('');
+    try {
+      const response = await fetch('/api/admin/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, action: 'update-tracking', currentLocation, trackingNote }),
+      });
+      const result = await response.json();
+      if (response.status === 401) {
+        setAuthenticated(false);
+        setError('Your admin session expired. Please sign in again.');
+        return;
+      }
+      if (!response.ok || !result.success) throw new Error(result.error || 'Order tracking could not be updated.');
+      setOrders((current) => current.map((item) => item._id === orderId ? result.order : item));
+      setTrackingEdits((current) => ({ ...current, [orderId]: { currentLocation, trackingNote } }));
+      setMessage(`Tracking details for ${result.order.orderNumber} were updated.`);
+    } catch (trackingError) {
+      setError(trackingError instanceof Error ? trackingError.message : 'Order tracking could not be updated.');
+    } finally {
+      setSavingTrackingId('');
+    }
+  };
+
+  const viewCustomer = async (customer) => {
+    setCustomerDetailLoading(true);
+    setCustomerDetail(null);
+    setError('');
+    try {
+      const response = await fetch(`/api/admin/customers/${customer._id}`);
+      const result = await response.json();
+      if (response.status === 401) {
+        setAuthenticated(false);
+        throw new Error('Your admin session expired. Please sign in again.');
+      }
+      if (!response.ok) throw new Error(result.error || 'Customer profile could not be loaded.');
+      setCustomerDetail(result);
+    } catch (detailError) {
+      setError(detailError instanceof Error ? detailError.message : 'Customer profile could not be loaded.');
+    } finally {
+      setCustomerDetailLoading(false);
+    }
+  };
+
+  const deleteCustomer = async (customer) => {
+    if (!window.confirm(`Permanently delete the account for ${customer.name} (${customer.email})? Completed order records will be retained.`)) return;
+    setDeletingCustomerId(customer._id);
+    setError('');
+    setMessage('');
+    try {
+      const response = await fetch(`/api/admin/customers/${customer._id}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (response.status === 401) {
+        setAuthenticated(false);
+        setError('Your admin session expired. Please sign in again.');
+        return;
+      }
+      if (!response.ok || !result.success) throw new Error(result.error || 'Customer account could not be deleted.');
+      setCustomers((current) => current.filter((item) => item._id !== customer._id));
+      setCustomerDetail((current) => current?.customer?._id === customer._id ? null : current);
+      setMessage(`${customer.name}'s account was deleted. Completed order records were retained.`);
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : 'Customer account could not be deleted.');
+    } finally {
+      setDeletingCustomerId('');
+    }
+  };
+
   const sendAdminReply = async (customerId) => {
     const text = (replyDrafts[customerId] || '').trim();
     if (!text) return;
@@ -431,7 +541,7 @@ export default function AdminPanel() {
   if (!authenticated) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#f7f6f2] px-4 py-12">
-        <section className="w-full max-w-md rounded-3xl border border-[#e9e6df] bg-white p-7 shadow-xl shadow-[#24352c]/5 sm:p-9">
+        <section className="glass-panel w-full max-w-md rounded-3xl p-7 shadow-xl shadow-[#24352c]/5 sm:p-9">
           <Link href="/" className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 transition hover:text-[#315b45]">
             <ArrowLeft size={15} /> Back to store
           </Link>
@@ -467,7 +577,7 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-[#f7f6f2] text-[#24352c]">
-      <header className="border-b border-[#e9e6df] bg-white">
+      <header className="glass-nav sticky top-0 z-30 border-b border-[#e9e6df]">
         <div className="flex w-full items-center justify-between gap-4 px-4 py-4 sm:px-8 lg:px-12">
           <div className="flex items-center gap-3">
             <img src="/favicon.png" alt="" className="h-10 w-10 rounded-xl object-cover" />
@@ -477,6 +587,7 @@ export default function AdminPanel() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Link href="/" className="inline-flex items-center gap-2 rounded-full border border-[#e5e2dc] px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-[#829078] hover:text-[#24352c] sm:px-4 sm:text-sm">
               <ArrowLeft size={15} /> <span className="hidden sm:inline">Live store</span><span className="sm:hidden">Store</span>
             </Link>
@@ -505,7 +616,7 @@ export default function AdminPanel() {
         {error && <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
         {message && <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{message}</p>}
 
-        <section id="product-form" className="rounded-3xl border border-[#e9e6df] bg-white p-5 shadow-sm sm:p-8">
+        <section id="product-form" className="glass-panel rounded-3xl p-5 sm:p-8">
           <div className="mb-6 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf0e8] text-[#315b45]"><PackagePlus size={19} /></div>
             <div>
@@ -533,13 +644,22 @@ export default function AdminPanel() {
               <input type="number" min="0" step="0.01" value={formData.oldPrice} onChange={(event) => setFormData({ ...formData, oldPrice: event.target.value })} className={fieldClass} placeholder="899" />
             </label>
             <label className="text-xs font-semibold text-[#47564b]">
-              Product image URL
-              <input type="text" inputMode="url" required value={formData.image} onChange={(event) => setFormData({ ...formData, image: event.target.value })} className={fieldClass} placeholder="https://example.com/product.jpg or /api/media/…" />
+              Main product image URL
+              <input type="text" inputMode="url" required value={formData.image} onChange={(event) => {
+                const image = event.target.value;
+                setFormData((current) => ({
+                  ...current,
+                  image,
+                  images: image
+                    ? [image, ...(current.images || []).filter((item) => item !== current.image)]
+                    : (current.images || []).slice(1),
+                }));
+              }} className={fieldClass} placeholder="https://example.com/product.jpg or /api/media/…" />
             </label>
             <label className="text-xs font-semibold text-[#47564b]">
-              Or upload an image
-              <input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploadingImage} onChange={uploadProductImage} className={`${fieldClass} file:mr-3 file:rounded-full file:border-0 file:bg-[#eaf0e8] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-[#315b45]`} />
-              <span className="mt-1 block text-[10px] font-normal text-slate-500">{uploadingImage ? 'Uploading image…' : 'JPEG, PNG or WebP · maximum 5 MB · stored securely with MongoDB'}</span>
+              Upload product images
+              <input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={uploadingImage} onChange={uploadProductImages} className={`${fieldClass} file:mr-3 file:rounded-full file:border-0 file:bg-[#eaf0e8] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-[#315b45]`} />
+              <span className="mt-1 block text-[10px] font-normal text-slate-500">{uploadingImage ? 'Uploading images…' : 'Up to 8 JPEG, PNG or WebP images · maximum 4 MB each · stored in MongoDB GridFS'}</span>
             </label>
             <label className="text-xs font-semibold text-[#47564b]">
               Stock quantity
@@ -551,17 +671,26 @@ export default function AdminPanel() {
             </label>
             <label className="text-xs font-semibold text-[#47564b]">
               Product video link (optional)
-              <input type="url" inputMode="url" value={formData.video} onChange={(event) => setFormData({ ...formData, video: event.target.value })} className={fieldClass} placeholder="YouTube, Vimeo or HTTPS video URL" />
+              <input type="url" inputMode="url" value={formData.videoUrl} onChange={(event) => setFormData({ ...formData, videoUrl: event.target.value })} className={fieldClass} placeholder="YouTube, Vimeo or HTTPS video URL" />
             </label>
             <label className="text-xs font-semibold text-[#47564b] sm:col-span-2 lg:col-span-3">
               Product information (optional)
               <textarea maxLength={2000} rows={4} value={formData.description} onChange={(event) => setFormData({ ...formData, description: event.target.value })} className={fieldClass} placeholder="Describe the product accurately: materials, dimensions, care, what's included…" />
             </label>
-            {formData.image && (
-              <div className="flex items-center gap-3 rounded-xl border border-[#e9e6df] bg-[#faf9f6] p-3 lg:col-span-1">
-                <ImagePlus size={18} className="shrink-0 text-[#829078]" />
-                <img src={formData.image} alt="Product preview" className="h-12 w-12 rounded-lg object-cover" />
-                <span className="truncate text-xs text-slate-500">Image preview</span>
+            <label className="text-xs font-semibold text-[#47564b] sm:col-span-2 lg:col-span-3">
+              Specifications (optional · one detail per line)
+              <textarea maxLength={4000} rows={3} value={formData.specifications} onChange={(event) => setFormData({ ...formData, specifications: event.target.value })} className={fieldClass} placeholder={'Material: Ceramic\nDimensions: 12 × 8 cm\nCare: Wipe with a dry cloth'} />
+            </label>
+            {formData.images.length > 0 && (
+              <div className="flex flex-wrap gap-3 rounded-xl border border-[#e9e6df] bg-[#faf9f6] p-3 sm:col-span-2 lg:col-span-3">
+                {formData.images.map((image, index) => (
+                  <div key={`${image}-${index}`} className="relative">
+                    <img src={image} alt={`Product preview ${index + 1}`} className="h-16 w-16 rounded-lg object-cover" />
+                    <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[8px] font-bold text-white">{index === 0 ? 'Cover' : index + 1}</span>
+                    <button type="button" onClick={() => removeProductImage(image)} aria-label={`Remove product image ${index + 1}`} className="absolute -right-2 -top-2 rounded-full bg-white p-1 text-rose-600 shadow"><X size={12} /></button>
+                  </div>
+                ))}
+                <span className="self-center text-xs text-slate-500"><ImagePlus size={16} className="mr-1 inline" />{formData.images.length} image(s)</span>
               </div>
             )}
             <div className="sm:col-span-2 lg:col-span-3">
@@ -575,7 +704,7 @@ export default function AdminPanel() {
         </section>
 
         {products.length === 0 && (
-          <section className="rounded-3xl border border-[#e9e6df] bg-white p-5 shadow-sm sm:p-8">
+          <section className="glass-panel rounded-3xl p-5 sm:p-8">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#829078]">Ready-to-publish preview catalog</p>
             <h2 className="mt-2 font-serif text-2xl text-[#24352c]">Make the six sample listings orderable</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">This creates six database-backed products using the sample prices shown in the storefront. Confirm that prices, image rights and stock match what you can actually fulfill before publishing; the listings will immediately accept orders.</p>
@@ -591,7 +720,7 @@ export default function AdminPanel() {
           </section>
         )}
 
-        <section className="overflow-hidden rounded-3xl border border-[#e9e6df] bg-white shadow-sm">
+        <section className="glass-panel overflow-hidden rounded-3xl">
           <div className="flex items-center justify-between border-b border-[#efede8] px-5 py-5 sm:px-7">
             <div>
               <h2 className="text-lg font-bold">Verified customer reviews</h2>
@@ -615,7 +744,7 @@ export default function AdminPanel() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-3xl border border-[#e9e6df] bg-white shadow-sm">
+        <section className="glass-panel overflow-hidden rounded-3xl">
           <div className="flex flex-col justify-between gap-3 border-b border-[#efede8] px-5 py-5 sm:flex-row sm:items-center sm:px-7">
             <div>
               <h2 className="text-lg font-bold">Your products</h2>
@@ -670,7 +799,7 @@ export default function AdminPanel() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-3xl border border-[#e9e6df] bg-white shadow-sm">
+        <section className="glass-panel overflow-hidden rounded-3xl">
           <div className="flex items-center justify-between border-b border-[#efede8] px-5 py-5 sm:px-7">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf0e8] text-[#315b45]"><Truck size={18} /></div>
@@ -729,6 +858,42 @@ export default function AdminPanel() {
                           );
                           return (
                             <div className="space-y-2">
+                              <label className="block text-[10px] font-semibold text-slate-500">
+                                Parcel location
+                                <input
+                                  maxLength={160}
+                                  value={trackingEdits[order._id]?.currentLocation ?? order.currentLocation ?? ''}
+                                  onChange={(event) => setTrackingEdits((current) => ({
+                                    ...current,
+                                    [order._id]: {
+                                      ...current[order._id],
+                                      currentLocation: event.target.value,
+                                    },
+                                  }))}
+                                  className="mt-1 w-full rounded-lg border border-[#e5e2dc] bg-white px-2.5 py-2 text-[10px]"
+                                  placeholder="e.g. Dhaka sorting hub"
+                                />
+                              </label>
+                              <label className="block text-[10px] font-semibold text-slate-500">
+                                Tracking update
+                                <textarea
+                                  maxLength={500}
+                                  value={trackingEdits[order._id]?.trackingNote ?? order.trackingNote ?? ''}
+                                  onChange={(event) => setTrackingEdits((current) => ({
+                                    ...current,
+                                    [order._id]: {
+                                      ...current[order._id],
+                                      trackingNote: event.target.value,
+                                    },
+                                  }))}
+                                  rows={2}
+                                  className="mt-1 w-full rounded-lg border border-[#e5e2dc] bg-white px-2.5 py-2 text-[10px]"
+                                  placeholder="Add a short delivery update"
+                                />
+                              </label>
+                              <button type="button" disabled={savingTrackingId === order._id} onClick={() => void updateOrderTracking(order._id)} className="w-full rounded-lg border border-[#e5e2dc] px-3 py-2 text-[10px] font-bold text-[#315b45] hover:bg-[#eaf0e8] disabled:opacity-50">
+                                {savingTrackingId === order._id ? 'Saving tracking…' : 'Save tracking'}
+                              </button>
                               <select aria-label={`Update status for ${order.orderNumber}`} value={order.status} disabled={!allowedStatuses.length} onChange={(event) => void updateOrderStatus(order._id, event.target.value)} className="rounded-xl border border-[#e5e2dc] bg-white px-3 py-2 text-xs font-semibold text-[#24352c] outline-none focus:border-[#58745d] disabled:bg-[#f5f3ed]">
                                 {[order.status, ...allowedStatuses].map((status) => <option key={status} value={status}>{status}</option>)}
                               </select>
@@ -752,25 +917,26 @@ export default function AdminPanel() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-3xl border border-[#e9e6df] bg-white shadow-sm">
+        <section className="glass-panel overflow-hidden rounded-3xl">
           <div className="flex items-center gap-3 border-b border-[#efede8] px-5 py-5 sm:px-7">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf0e8] text-[#315b45]"><Users size={18} /></div>
             <div><h2 className="text-lg font-bold">Customers</h2><p className="mt-1 text-xs text-slate-500">{customers.length} registered customer(s)</p></div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px] text-left text-sm">
-              <thead className="bg-[#faf9f6] text-[10px] font-bold uppercase tracking-[0.13em] text-slate-500"><tr><th className="px-5 py-3 sm:px-7">Customer</th><th className="px-4 py-3">Phone</th><th className="px-4 py-3">Joined</th><th className="px-5 py-3 text-right sm:px-7">Orders</th></tr></thead>
+            <table className="w-full min-w-[850px] text-left text-sm">
+              <thead className="bg-[#faf9f6] text-[10px] font-bold uppercase tracking-[0.13em] text-slate-500"><tr><th className="px-5 py-3 sm:px-7">Customer</th><th className="px-4 py-3">Contact</th><th className="px-4 py-3">Saved location</th><th className="px-4 py-3">Joined</th><th className="px-4 py-3">Orders</th><th className="px-5 py-3 text-right sm:px-7">Actions</th></tr></thead>
               <tbody className="divide-y divide-[#efede8]">
-                {customers.length === 0 ? <tr><td colSpan="4" className="px-5 py-12 text-center text-sm text-slate-500">Registered customer details will appear here.</td></tr> : customers.map((customer) => (
+                {customers.length === 0 ? <tr><td colSpan="6" className="px-5 py-12 text-center text-sm text-slate-500">Registered customer details will appear here.</td></tr> : customers.map((customer) => (
                   <tr key={customer._id} className="hover:bg-[#faf9f6]">
-                    <td className="px-5 py-4 sm:px-7"><p className="font-semibold">{customer.name}</p><p className="mt-1 text-xs text-slate-500">{customer.email}</p></td>
+                    <td className="px-5 py-4 sm:px-7"><button type="button" onClick={() => void viewCustomer(customer)} className="text-left font-semibold text-[#315b45] hover:underline">{customer.name}</button><p className="mt-1 text-xs text-slate-500">{customer.email}</p></td>
+                    <td className="px-4 py-4 text-xs text-slate-600">{customer.phone || '—'}</td>
                     <td className="px-4 py-4 text-xs text-slate-600">
-                      <p>{customer.phone || '—'}</p>
-                      {customer.address?.street && <p className="mt-1 max-w-[260px] text-[10px] leading-4 text-slate-400">{customer.address.street}, {customer.address.area}, {customer.address.district}</p>}
-                      {Number.isFinite(customer.location?.latitude) && Number.isFinite(customer.location?.longitude) && <a className="mt-1 inline-block text-[10px] font-semibold text-[#58745d] underline" href={`https://maps.google.com/?q=${customer.location.latitude},${customer.location.longitude}`} target="_blank" rel="noreferrer">Saved location</a>}
+                      <p className="max-w-[250px]">{[customer.address?.street, customer.address?.area, customer.address?.district].filter(Boolean).join(', ') || 'No saved address'}</p>
+                      {Number.isFinite(customer.location?.latitude) && Number.isFinite(customer.location?.longitude) && <a className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-[#58745d] underline" href={`https://maps.google.com/?q=${customer.location.latitude},${customer.location.longitude}`} target="_blank" rel="noreferrer"><MapPin size={11} /> Open map</a>}
                     </td>
                     <td className="px-4 py-4 text-xs text-slate-500">{new Date(customer.createdAt).toLocaleDateString()}</td>
-                    <td className="px-5 py-4 text-right text-xs font-semibold sm:px-7">{orders.filter((order) => String(order.customerId) === customer._id).length}</td>
+                    <td className="px-4 py-4 text-xs font-semibold">{orders.filter((order) => String(order.customerId) === customer._id).length}</td>
+                    <td className="px-5 py-4 text-right sm:px-7"><div className="flex justify-end gap-2"><button type="button" onClick={() => void viewCustomer(customer)} className="rounded-full border border-[#e5e2dc] px-3 py-2 text-[10px] font-semibold text-[#315b45] hover:bg-[#eaf0e8]">View</button><button type="button" disabled={deletingCustomerId === customer._id} onClick={() => void deleteCustomer(customer)} aria-label={`Delete ${customer.name}`} className="rounded-full border border-rose-100 px-3 py-2 text-[10px] font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50">{deletingCustomerId === customer._id ? 'Deleting…' : 'Delete'}</button></div></td>
                   </tr>
                 ))}
               </tbody>
@@ -778,7 +944,7 @@ export default function AdminPanel() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[#e9e6df] bg-white p-5 shadow-sm sm:p-7">
+        <section className="glass-panel rounded-3xl p-5 sm:p-7">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf0e8] text-[#315b45]"><MessageCircle size={18} /></div>
             <div><h2 className="text-lg font-bold">Customer support inbox</h2><p className="mt-1 text-xs text-slate-500">Reply directly to customer messages from here.</p></div>
@@ -810,6 +976,72 @@ export default function AdminPanel() {
             ))}
           </div>
         </section>
+
+        {customerDetailLoading && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm" role="status">
+            <div className="glass-panel rounded-2xl px-6 py-5 text-sm font-semibold">Loading customer profile…</div>
+          </div>
+        )}
+        {customerDetail && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/55 p-3 backdrop-blur-sm sm:p-6" role="presentation" onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setCustomerDetail(null);
+          }}>
+            <section aria-label={`Customer profile for ${customerDetail.customer.name}`} aria-modal="true" role="dialog" className="glass-panel max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-3xl p-5 shadow-2xl sm:p-7">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex min-w-0 items-center gap-4">
+                  {customerDetail.customer.avatarUrl
+                    ? <img src={customerDetail.customer.avatarUrl} alt="" className="h-14 w-14 rounded-2xl object-cover" />
+                    : <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#eaf0e8] font-bold text-[#315b45]">{customerDetail.customer.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase()}</div>}
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#829078]">Customer profile</p>
+                    <h2 className="mt-1 truncate font-serif text-2xl text-[#24352c]">{customerDetail.customer.name}</h2>
+                  </div>
+                </div>
+                <button type="button" onClick={() => setCustomerDetail(null)} aria-label="Close customer profile" className="rounded-full p-2 text-slate-500 hover:bg-white/70"><X size={18} /></button>
+              </div>
+              <div className="mt-5 grid gap-3 rounded-2xl bg-white/60 p-4 text-xs sm:grid-cols-2">
+                <p><span className="font-semibold text-slate-500">Email</span><br />{customerDetail.customer.email}</p>
+                <p><span className="font-semibold text-slate-500">Phone</span><br />{customerDetail.customer.phone || 'Not provided'}</p>
+                <p className="sm:col-span-2"><span className="font-semibold text-slate-500">Saved address</span><br />
+                  {[
+                    customerDetail.customer.address?.street,
+                    customerDetail.customer.address?.area,
+                    customerDetail.customer.address?.district,
+                    customerDetail.customer.address?.postalCode,
+                  ].filter(Boolean).join(', ') || 'No saved address'}
+                </p>
+                {Number.isFinite(customerDetail.customer.location?.latitude) && Number.isFinite(customerDetail.customer.location?.longitude) && (
+                  <p className="sm:col-span-2">
+                    <a className="inline-flex items-center gap-1 font-semibold text-[#58745d] underline" href={`https://maps.google.com/?q=${customerDetail.customer.location.latitude},${customerDetail.customer.location.longitude}`} target="_blank" rel="noreferrer">
+                      <MapPin size={13} /> View saved customer location
+                    </a>
+                  </p>
+                )}
+              </div>
+              <div className="mt-6 flex items-center justify-between gap-3">
+                <h3 className="font-serif text-xl text-[#24352c]">Order history ({customerDetail.orders.length})</h3>
+                <button type="button" disabled={deletingCustomerId === customerDetail.customer._id} onClick={() => void deleteCustomer(customerDetail.customer)} className="rounded-full border border-rose-100 px-3 py-2 text-[10px] font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50">
+                  {deletingCustomerId === customerDetail.customer._id ? 'Deleting…' : 'Delete customer'}
+                </button>
+              </div>
+              <div className="mt-3 space-y-3">
+                {customerDetail.orders.length === 0 ? <p className="rounded-xl bg-white/60 p-4 text-xs text-slate-500">This customer has no orders.</p> : customerDetail.orders.map((order) => (
+                  <article key={order._id} className="rounded-2xl border border-[#e9e6df] bg-white/55 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div><p className="text-xs font-bold">{order.orderNumber}</p><time className="mt-1 block text-[10px] text-slate-500">{new Date(order.createdAt).toLocaleString()}</time></div>
+                      <span className="rounded-full bg-[#eaf0e8] px-3 py-1.5 text-[10px] font-bold text-[#315b45]">{order.status}</span>
+                    </div>
+                    <p className="mt-3 text-xs text-slate-600">Delivery: {[order.deliveryAddress?.street, order.deliveryAddress?.area, order.deliveryAddress?.district].filter(Boolean).join(', ') || 'Address unavailable'}</p>
+                    {(order.currentLocation || order.trackingNote) && <div className="mt-2 rounded-xl bg-[#f7f6f2] p-3 text-xs"><p className="font-semibold text-[#315b45]">{order.currentLocation || 'Location not set'}</p>{order.trackingNote && <p className="mt-1 leading-5 text-slate-600">{order.trackingNote}</p>}</div>}
+                    <ol className="mt-3 flex flex-wrap gap-2">
+                      {(order.statusHistory || []).map((entry, index) => <li key={`${entry.status}-${entry.createdAt}-${index}`} className="rounded-lg bg-[#f7f6f2] px-2.5 py-2 text-[10px]"><span className="font-semibold">{entry.status}</span><time className="ml-1 text-slate-400">{new Date(entry.createdAt).toLocaleDateString()}</time></li>)}
+                    </ol>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </div>
+        )}
       </main>
     </div>
   );
