@@ -93,7 +93,7 @@ button:not(:disabled) {
 }
 
 .glass-nav {
-  background: rgba(250, 248, 243, 0.86);
+  background: rgba(250, 248, 243, 0.88);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-color: var(--border-subtle);
@@ -437,21 +437,30 @@ button:not(:disabled) {
 
 /* Panels, Cards & Collection */
 .feature-strip {
+  display: grid;
+  align-items: stretch;
   border: 1px solid var(--border-subtle);
-  border-radius: 1.5rem;
+  border-radius: 1.4rem;
   background: var(--bg-surface);
   box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
+.feature-strip > * {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .glass-panel {
   border: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--bg-surface);
   box-shadow: var(--shadow-elevated), inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
 .premium-card {
   border: 1px solid var(--border-subtle);
-  border-radius: 1.35rem;
+  border-radius: 1.25rem;
   background: var(--bg-surface);
   box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 260ms ease, border-color 260ms ease;
@@ -590,7 +599,7 @@ button:not(:disabled) {
   box-shadow: 0 8px 24px rgba(15, 27, 21, 0.04);
 }
 
-/* Clean Floating Action Stack (No Box/Blur Frame) */
+/* Frameless Floating Action Dock (No blurred box frame) */
 .customer-actions,
 .customer-actions > div,
 .customer-actions > a,
@@ -645,15 +654,15 @@ button:not(:disabled) {
 /* Refined Luxury Night Mode */
 html[data-theme="dark"] {
   --bg-page: #0b120f;
-  --bg-surface: #131f19;
-  --bg-surface-soft: #182720;
-  --text-primary: #f3efe6;
-  --text-secondary: #c9d1cb;
-  --text-muted: #93a199;
+  --bg-surface: #13201a;
+  --bg-surface-soft: #192921;
+  --text-primary: #f6f2e9;
+  --text-secondary: #d4dcd6;
+  --text-muted: #9aa8a0;
   --border-subtle: rgba(217, 199, 166, 0.14);
   --border-strong: rgba(217, 199, 166, 0.28);
-  --shadow-soft: 0 14px 36px rgba(0, 0, 0, 0.32);
-  --shadow-elevated: 0 24px 58px rgba(0, 0, 0, 0.46);
+  --shadow-soft: 0 14px 36px rgba(0, 0, 0, 0.34);
+  --shadow-elevated: 0 24px 58px rgba(0, 0, 0, 0.48);
   --background: var(--bg-page);
   --foreground: var(--text-primary);
   color-scheme: dark;
@@ -678,9 +687,9 @@ html[data-theme="dark"] .customer-hub-shell {
 }
 
 html[data-theme="dark"] .glass-nav {
-  background: rgba(11, 18, 15, 0.86);
+  background: rgba(11, 18, 15, 0.88);
   border-color: var(--border-subtle);
-  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.38);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.4);
 }
 
 html[data-theme="dark"] .main-nav-links a {
@@ -695,17 +704,17 @@ html[data-theme="dark"] .main-nav-links a:focus-visible {
 html[data-theme="dark"] .glass-control,
 html[data-theme="dark"] .glass-control:hover,
 html[data-theme="dark"] .glass-control:focus-within {
-  border-color: rgba(217, 199, 166, 0.16) !important;
-  background: var(--bg-surface) !important;
-  box-shadow: none !important;
+  border-color: rgba(217, 199, 166, 0.16);
+  background: var(--bg-surface);
+  box-shadow: none;
 }
 
 html[data-theme="dark"] .glass-control input,
 html[data-theme="dark"] input[type="search"] {
-  border: none !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  outline: none !important;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
 }
 
 html[data-theme="dark"] .feature-strip,
@@ -764,62 +773,32 @@ html[data-theme="dark"] .customer-actions {
   box-shadow: none !important;
 }
 
-html[data-theme="dark"] [class*="bg-white"],
-html[data-theme="dark"] [class*="bg-[#faf9f6]"],
-html[data-theme="dark"] [class*="bg-[#f7f6f2]"],
-html[data-theme="dark"] [class*="bg-[#f5f3ed]"],
-html[data-theme="dark"] [class*="bg-[#f0eee8]"] {
-  background-color: var(--bg-surface) !important;
-}
-
-html[data-theme="dark"] [class*="bg-[#24352c]"],
-html[data-theme="dark"] [class*="bg-[#1e2d25]"],
-html[data-theme="dark"] [class*="bg-[#18251f]"] {
-  background-color: #13211a !important;
-}
-
-html[data-theme="dark"] [class*="text-[#24352c]"],
-html[data-theme="dark"] [class*="text-[#47564b]"],
-html[data-theme="dark"] [class*="text-[#315b45]"],
-html[data-theme="dark"] [class*="text-slate-900"],
-html[data-theme="dark"] [class*="text-slate-700"],
-html[data-theme="dark"] [class*="text-slate-600"],
-html[data-theme="dark"] [class*="text-slate-500"] {
-  color: var(--text-primary) !important;
-}
-
-html[data-theme="dark"] [class*="border-[#e"],
-html[data-theme="dark"] [class*="border-[#d"],
-html[data-theme="dark"] [class*="border-white"] {
-  border-color: var(--border-subtle) !important;
-}
-
 html[data-theme="dark"] .hero-stage .hero-title,
 html[data-theme="dark"] .hero-stage .hero-title span {
-  color: #fbf8f1 !important;
+  color: #fbf8f1;
 }
 
 html[data-theme="dark"] .hero-stage .hero-copy {
-  color: rgba(243, 239, 230, 0.84) !important;
+  color: rgba(243, 239, 230, 0.84);
 }
 
 html[data-theme="dark"] .hero-primary-cta {
-  color: #122019 !important;
-  background-color: #d9c7a6 !important;
+  color: #122019;
+  background-color: #d9c7a6;
 }
 
 html[data-theme="dark"] .hero-primary-cta:hover {
-  background-color: #efe3cb !important;
+  background-color: #efe3cb;
 }
 
 html[data-theme="dark"] .hero-secondary-cta {
-  color: #fbf8f1 !important;
-  border-color: rgba(217, 199, 166, 0.35) !important;
-  background-color: rgba(217, 199, 166, 0.06) !important;
+  color: #fbf8f1;
+  border-color: rgba(217, 199, 166, 0.35);
+  background-color: rgba(217, 199, 166, 0.06);
 }
 
 html[data-theme="dark"] .hero-secondary-cta:hover {
-  background-color: rgba(217, 199, 166, 0.14) !important;
+  background-color: rgba(217, 199, 166, 0.14);
 }
 
 html[data-theme="dark"] input,

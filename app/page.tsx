@@ -309,11 +309,11 @@ export default function Home() {
   };
 
   return (
-    <div className="storefront-shell min-h-screen w-full overflow-x-hidden bg-[#faf9f6] text-[#24352c] selection:bg-[#24352c] selection:text-[#faf9f6]">
+    <div className="storefront-shell min-h-screen w-full overflow-x-hidden bg-[#faf8f3] text-[#16261e] selection:bg-[#c9b07a] selection:text-[#16261e]">
       {/* Top Concierge Bar */}
-      <div className="announcement-bar flex w-full flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-[#18241d] px-4 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-[#e6dfd1] sm:px-8 lg:px-14">
+      <div className="announcement-bar flex w-full flex-wrap items-center justify-between gap-2 border-b border-white/10 px-4 py-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#f3efe6] sm:px-8 lg:px-14">
         <a
-          className="truncate transition hover:text-white"
+          className="truncate transition hover:text-[#e5d2ac]"
           href="https://wa.me/880153410524?text=Assalamu%20alaikum%2C%20I%20would%20like%20to%20place%20an%20order."
           target="_blank"
           rel="noreferrer"
@@ -321,7 +321,7 @@ export default function Home() {
           Concierge &amp; WhatsApp · +880 1534-10524
         </a>
         <div className="flex items-center gap-2.5">
-          <span className="hidden text-white/60 sm:inline">Nationwide Dispatch</span>
+          <span className="hidden text-[#d9c7a6]/80 sm:inline">Nationwide Dispatch</span>
           <a
             aria-label="Ittadi on Facebook"
             className="rounded-full p-1 text-white/80 transition hover:bg-white/10 hover:text-white"
@@ -344,9 +344,9 @@ export default function Home() {
       </div>
 
       {/* Sticky Header */}
-      <header className="glass-nav sticky top-0 z-30 border-b border-[#e8e3d8]/90 bg-[#faf9f6]/92 backdrop-blur-xl backdrop-saturate-150">
+      <header className="glass-nav sticky top-0 z-30 border-b backdrop-blur-xl backdrop-saturate-150">
         <div className="flex w-full flex-wrap items-center justify-between gap-2.5 px-4 py-3 sm:px-8 lg:flex-nowrap lg:px-14 lg:py-4">
-          {/* Brand Logo (Double-click/tap or Enter opens Admin Sign-in) */}
+          {/* Brand Logo */}
           <button
             type="button"
             onClick={() => {
@@ -372,10 +372,10 @@ export default function Home() {
               src="/favicon.png"
               alt=""
               draggable="false"
-              className="h-9 w-9 rounded-full border border-[#dfd9cc] object-cover transition-transform duration-300 group-hover:scale-105 sm:h-10 sm:w-10"
+              className="h-9 w-9 rounded-full border border-[#c9b07a]/45 object-cover transition-transform duration-300 group-hover:scale-105 sm:h-10 sm:w-10"
             />
             <div className="flex flex-col">
-              <span className="brand-wordmark font-serif text-base font-semibold tracking-[0.2em] text-[#24352c] sm:text-xl">
+              <span className="brand-wordmark font-serif text-base font-semibold tracking-[0.2em] sm:text-xl">
                 ITTADI
               </span>
               <span className="hidden text-[8px] font-semibold uppercase tracking-[0.28em] text-[#7c8875] sm:block">
@@ -387,28 +387,20 @@ export default function Home() {
           {/* Desktop Navigation */}
           <nav
             aria-label="Main navigation"
-            className="main-nav-links hidden items-center gap-7 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#536258] lg:flex"
+            className="main-nav-links hidden items-center gap-7 text-[11px] font-semibold uppercase tracking-[0.18em] lg:flex"
           >
-            <a href="#" className="text-[#24352c] underline decoration-[#b79d72] underline-offset-8">
+            <a href="#" className="underline decoration-[#c9b07a] underline-offset-8">
               Edition
             </a>
-            <a href="#categories" className="transition hover:text-[#24352c]">
-              Categories
-            </a>
-            <a href="#products" className="transition hover:text-[#24352c]">
-              Collection
-            </a>
-            <a href="#about" className="transition hover:text-[#24352c]">
-              Philosophy
-            </a>
-            <a href="#contact" className="transition hover:text-[#24352c]">
-              Contact
-            </a>
+            <a href="#categories">Categories</a>
+            <a href="#products">Collection</a>
+            <a href="#about">Philosophy</a>
+            <a href="#contact">Contact</a>
           </nav>
 
           {/* Utility Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2.5">
-            <label className="glass-control hidden items-center gap-2 rounded-full border border-[#e3ddd0] bg-white px-4 py-2 text-[#7c8875] transition focus-within:border-[#24352c] lg:flex lg:w-60">
+            <label className="glass-control hidden items-center gap-2 rounded-full px-4 py-2 text-[#7c8875] transition lg:flex lg:w-60">
               <Search size={15} aria-hidden="true" className="shrink-0" />
               <input
                 type="search"
@@ -416,7 +408,7 @@ export default function Home() {
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search objects..."
                 aria-label="Search products"
-                className="min-w-0 flex-1 bg-transparent text-xs text-[#24352c] outline-none placeholder:text-[#989d92]"
+                className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-[#989d92]"
               />
             </label>
 
@@ -425,7 +417,7 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Open customer account"
-              className="glass-control flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full border border-[#e3ddd0] bg-white px-2.5 text-[#24352c] transition hover:border-[#24352c] sm:h-10 sm:px-4"
+              className="glass-control flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full px-2.5 text-xs transition sm:h-10 sm:px-4"
             >
               <CircleUserRound size={16} />
               <span className="hidden text-[11px] font-semibold uppercase tracking-[0.14em] sm:inline">
@@ -438,7 +430,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setCartOpen(true)}
-              className="relative flex h-9 items-center justify-center gap-1.5 rounded-full bg-[#24352c] px-3 text-[#faf9f6] transition hover:bg-[#344b3f] sm:h-10 sm:px-4"
+              className="relative flex h-9 items-center justify-center gap-1.5 rounded-full bg-[#16261e] px-3 text-[#faf8f3] shadow-sm transition hover:bg-[#243c30] sm:h-10 sm:px-4"
               aria-label={`Open shopping bag, ${cartCount} items`}
             >
               <ShoppingBag size={15} />
@@ -450,7 +442,7 @@ export default function Home() {
 
           {/* Mobile Search Bar */}
           <div className="w-full pt-1 lg:hidden">
-            <label className="glass-control flex w-full items-center gap-2.5 rounded-xl border border-[#e3ddd0] bg-white px-3.5 py-2 text-[#7c8875] shadow-[0_2px_10px_rgba(36,53,44,0.03)] transition focus-within:border-[#24352c]">
+            <label className="glass-control flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2 text-[#7c8875] transition">
               <Search size={15} aria-hidden="true" className="shrink-0 text-[#6e7969]" />
               <input
                 type="search"
@@ -458,14 +450,14 @@ export default function Home() {
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search aesthetic lights, planters, decor..."
                 aria-label="Search products"
-                className="min-w-0 flex-1 bg-transparent text-xs text-[#24352c] outline-none placeholder:text-[#989d92]"
+                className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-[#989d92]"
               />
               {search && (
                 <button
                   type="button"
                   onClick={() => setSearch('')}
                   aria-label="Clear search"
-                  className="rounded-full p-0.5 text-[#7c8875] hover:text-[#24352c]"
+                  className="rounded-full p-0.5 text-[#7c8875]"
                 >
                   <X size={14} />
                 </button>
@@ -477,17 +469,17 @@ export default function Home() {
 
       <main>
         {/* Hero Section */}
-        <section className="hero-stage relative isolate overflow-hidden border-b border-[#e5dfd2] bg-[#f4f1ea] text-[#24352c]">
+        <section className="hero-stage relative isolate overflow-hidden border-b border-[#c9b07a]/20 text-[#fbf8f1]">
           <div className="hero-glow hero-glow-a" />
           <div className="hero-glow hero-glow-b" />
-          <div className="hero-grid-pattern opacity-40" />
+          <div className="hero-grid-pattern" />
 
-          <div className="relative z-10 grid w-full items-center gap-8 px-4 py-5 sm:gap-12 sm:px-10 sm:py-14 lg:min-h-[660px] lg:grid-cols-[1.12fr_0.88fr] lg:gap-16 lg:px-14 lg:py-20">
+          <div className="relative z-10 grid w-full items-center gap-8 px-4 py-6 sm:gap-12 sm:px-10 sm:py-14 lg:min-h-[650px] lg:grid-cols-[1.12fr_0.88fr] lg:gap-16 lg:px-14 lg:py-20">
             {/* Mobile Compact Editorial Banner */}
-            <div className="relative overflow-hidden rounded-3xl border border-[#dfd8c8] bg-[#1e2d25] text-white shadow-[0_18px_45px_-18px_rgba(24,36,29,0.35)] lg:hidden">
+            <div className="relative overflow-hidden rounded-3xl border border-[#c9b07a]/25 bg-[#15241c]/90 text-white shadow-[0_22px_50px_-20px_rgba(0,0,0,0.45)] lg:hidden">
               <div className="grid grid-cols-[1.15fr_0.85fr] items-center">
                 <div className="p-5 sm:p-7">
-                  <span className="inline-block rounded-full bg-white/12 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-[#e5d2ac]">
+                  <span className="inline-block rounded-full border border-[#c9b07a]/35 bg-[#c9b07a]/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-[#e5d2ac]">
                     Ittadi Edition
                   </span>
                   <h1 className="hero-title mt-3 font-serif text-2xl font-normal leading-tight text-white sm:text-4xl">
@@ -500,7 +492,7 @@ export default function Home() {
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <a
                       href="#products"
-                      className="inline-flex items-center gap-1.5 rounded-full bg-[#e5d2ac] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#18241d] transition hover:bg-white"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#d9c7a6] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#122019] transition hover:bg-white"
                     >
                       Shop Now <ArrowRight size={12} />
                     </a>
@@ -515,7 +507,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="relative h-full min-h-[196px] overflow-hidden bg-[#2b3e33] sm:min-h-[240px]">
+                <div className="relative h-full min-h-[196px] overflow-hidden bg-[#1e3127] sm:min-h-[240px]">
                   {featuredLead?.image ? (
                     <img
                       src={featuredLead.image}
@@ -527,31 +519,31 @@ export default function Home() {
                       Curated Living
                     </div>
                   )}
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#1e2d25]/45 via-transparent to-transparent" />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#15241c]/55 via-transparent to-transparent" />
                 </div>
               </div>
             </div>
 
             {/* Desktop Editorial Typography */}
             <div className="hidden max-w-2xl lg:block">
-              <div className="inline-flex items-center gap-2.5 border-b border-[#c9bea8] pb-2 text-[10px] font-bold uppercase tracking-[0.28em] text-[#6d7965]">
-                <Sparkles size={13} className="text-[#9e7d47]" />
+              <div className="hero-eyebrow inline-flex items-center gap-2.5 rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.26em]">
+                <Sparkles size={13} className="text-[#d9c7a6]" />
                 <span>Curated Objects for Quiet Spaces</span>
               </div>
 
-              <h1 className="hero-title mt-7 font-serif text-6xl font-normal leading-[1.04] tracking-tight text-[#1e2d25] xl:text-[4.6rem]">
+              <h1 className="hero-title mt-7 font-serif text-6xl font-normal leading-[1.04] tracking-tight xl:text-[4.6rem]">
                 Timeless objects,
-                <span className="mt-1.5 block italic text-[#5c6d5c]">crafted for living.</span>
+                <span className="mt-1.5 block italic text-[#e5d2ac]">crafted for living.</span>
               </h1>
 
-              <p className="hero-copy mt-6 max-w-lg text-base leading-7 text-[#58655c]">
+              <p className="hero-copy mt-6 max-w-lg text-base leading-7">
                 An edited selection of warm ambient lighting, sculptural decor, and everyday tactile pieces chosen to bring calm character into your home.
               </p>
 
               <div className="mt-9 flex flex-row items-center gap-3.5">
                 <a
                   href="#products"
-                  className="hero-primary-cta inline-flex items-center justify-center gap-2.5 rounded-full bg-[#24352c] px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#faf9f6] transition hover:bg-[#33493e]"
+                  className="hero-primary-cta inline-flex items-center justify-center gap-2.5 rounded-full px-8 py-3.5 text-xs font-bold uppercase tracking-[0.18em] transition hover:bg-[#efe3cb]"
                 >
                   <span>View the Edition</span>
                   <ArrowRight size={15} />
@@ -560,14 +552,14 @@ export default function Home() {
                   href="https://wa.me/880153410524?text=Assalamu%20alaikum%2C%20I%20would%20like%20to%20place%20an%20order."
                   target="_blank"
                   rel="noreferrer"
-                  className="hero-secondary-cta inline-flex items-center justify-center gap-2 rounded-full border border-[#cfc7b7] bg-white/75 px-7 py-3.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#24352c] backdrop-blur-sm transition hover:border-[#24352c] hover:bg-white"
+                  className="hero-secondary-cta inline-flex items-center justify-center gap-2 rounded-full border border-[#d9c7a6]/35 bg-white/5 px-7 py-3.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#fbf8f1] backdrop-blur-sm transition hover:bg-white/12"
                 >
                   <Phone size={14} />
                   <span>Order via WhatsApp</span>
                 </a>
               </div>
 
-              <div className="mt-11 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-[#e3ddd0] pt-6 text-[11px] uppercase tracking-[0.18em] text-[#6b766c]">
+              <div className="mt-11 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-white/15 pt-6 text-[11px] uppercase tracking-[0.18em] text-[#d9c7a6]/85">
                 <span>01 / Warm Lighting &amp; Decor</span>
                 <span>02 / Thoughtful Gifting</span>
                 <span>03 / Across Bangladesh</span>
@@ -576,8 +568,8 @@ export default function Home() {
 
             {/* Desktop Featured Showcase Card */}
             <div className="hero-showcase relative mx-auto hidden w-full max-w-lg lg:block">
-              <div className="rounded-[2rem] border border-[#dfd8c8] bg-white/85 p-4 shadow-[0_24px_70px_-25px_rgba(36,53,44,0.18)] backdrop-blur-xl">
-                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[1.5rem] bg-[#eae5da]">
+              <div className="rounded-[2rem] border border-[#d9c7a6]/25 bg-white/10 p-4 shadow-[0_28px_75px_-20px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[1.5rem] bg-[#192921]">
                   {featuredLead?.image ? (
                     <img
                       src={featuredLead.image}
@@ -585,26 +577,26 @@ export default function Home() {
                       className="h-full w-full object-cover transition duration-700 hover:scale-[1.03]"
                     />
                   ) : (
-                    <div className="flex h-full w-full flex-col items-center justify-center bg-[#e7e2d6] p-8 text-center">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.26em] text-[#7c8875]">
+                    <div className="flex h-full w-full flex-col items-center justify-center bg-[#192921] p-8 text-center">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.26em] text-[#d9c7a6]">
                         ITTADI ARCHIVE
                       </span>
-                      <span className="mt-3 font-serif text-3xl italic text-[#24352c]">
+                      <span className="mt-3 font-serif text-3xl italic text-[#fbf8f1]">
                         Quietly refined
                       </span>
                     </div>
                   )}
 
-                  <div className="absolute inset-x-3.5 bottom-3.5 flex items-end justify-between gap-4 rounded-2xl border border-white/40 bg-[#faf9f6]/92 p-4 text-[#24352c] shadow-lg backdrop-blur-md">
+                  <div className="absolute inset-x-3.5 bottom-3.5 flex items-end justify-between gap-4 rounded-2xl border border-[#d9c7a6]/30 bg-[#121f18]/90 p-4 text-[#fbf8f1] shadow-xl backdrop-blur-md">
                     <div className="min-w-0">
-                      <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[#7c8875]">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[#d9c7a6]">
                         Featured Piece
                       </p>
-                      <p className="mt-1 truncate font-serif text-lg text-[#24352c]">
+                      <p className="mt-1 truncate font-serif text-lg text-[#fbf8f1]">
                         {featuredLead?.name || 'Signature Home Objects'}
                       </p>
                       {featuredLead && (
-                        <p className="mt-0.5 text-xs font-semibold text-[#315b45]">
+                        <p className="mt-0.5 text-xs font-semibold text-[#e5d2ac]">
                           ৳ {featuredLead.price}
                         </p>
                       )}
@@ -614,7 +606,7 @@ export default function Home() {
                         type="button"
                         onClick={() => openProduct(featuredLead)}
                         aria-label={`Explore ${featuredLead.name}`}
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#24352c] text-white transition hover:bg-[#315b45]"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#d9c7a6] text-[#122019] transition hover:bg-white"
                       >
                         <ArrowUpRight size={17} />
                       </button>
@@ -627,13 +619,13 @@ export default function Home() {
         </section>
 
         {/* Category Showcase Grid */}
-        <section id="categories" className="w-full border-b border-[#e8e3d8] bg-[#faf9f6] px-4 py-6 sm:px-10 sm:py-10 lg:px-14">
+        <section id="categories" className="w-full border-b border-[var(--border-subtle)] px-4 py-8 sm:px-10 sm:py-12 lg:px-14">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <span className="text-[9px] font-bold uppercase tracking-[0.24em] text-[#7c8875] sm:text-[10px]">
+              <span className="section-eyebrow text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--text-muted)]">
                 Browse By Edit
               </span>
-              <h2 className="mt-0.5 font-serif text-xl font-normal text-[#1e2d25] sm:text-2xl">
+              <h2 className="mt-1 font-serif text-2xl font-normal sm:text-3xl">
                 Featured Categories
               </h2>
             </div>
@@ -641,14 +633,14 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setCategory('All')}
-                className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#315b45] underline underline-offset-4"
+                className="rounded-full border border-[var(--border-strong)] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] transition hover:border-[#c9b07a]"
               >
                 Reset ({category})
               </button>
             )}
           </div>
 
-          <div className="mt-4 grid grid-cols-4 gap-2.5 sm:grid-cols-5 sm:gap-4">
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5 lg:gap-5">
             {categoryCards.slice(0, 5).map((cat) => {
               const active = category === cat.name;
               return (
@@ -657,13 +649,13 @@ export default function Home() {
                   type="button"
                   onClick={() => setCategory(active ? 'All' : cat.name)}
                   aria-pressed={active}
-                  className={`group flex flex-col items-center rounded-2xl border p-2 text-center transition sm:p-3 ${
+                  className={`category-pill group flex flex-col items-center rounded-2xl border p-2.5 text-center transition sm:p-3.5 ${
                     active
-                      ? 'border-[#24352c] bg-[#24352c] text-white shadow-md'
-                      : 'border-[#e6e1d5] bg-white text-[#24352c] hover:border-[#b79d72]'
+                      ? 'border-[#16261e] bg-[#16261e] text-[#fbf8f1] shadow-md'
+                      : 'border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[#c9b07a]'
                   }`}
                 >
-                  <div className="aspect-square w-full overflow-hidden rounded-xl bg-[#f2efe8]">
+                  <div className="product-image-frame aspect-square w-full overflow-hidden rounded-xl">
                     <img
                       src={cat.image}
                       alt={cat.name}
@@ -671,12 +663,12 @@ export default function Home() {
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
                   </div>
-                  <span className="mt-2 line-clamp-1 text-[10px] font-semibold tracking-tight sm:text-xs">
+                  <span className="mt-2.5 line-clamp-1 text-xs font-semibold tracking-tight">
                     {cat.name}
                   </span>
                   <span
-                    className={`mt-0.5 text-[9px] ${
-                      active ? 'text-[#e5d2ac]' : 'text-[#7c8875]'
+                    className={`mt-0.5 text-[10px] ${
+                      active ? 'text-[#e5d2ac]' : 'text-[var(--text-muted)]'
                     }`}
                   >
                     {cat.count} {cat.count === 1 ? 'item' : 'items'}
@@ -687,40 +679,46 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Promise Strip */}
-        <section id="about" className="feature-strip-shell border-b border-[#e8e3d8] bg-[#faf9f6] px-4 py-6 sm:px-10 sm:py-8 lg:px-14">
-          <div className="feature-strip grid w-full grid-cols-1 divide-y divide-[#e8e3d8] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-            <div className="flex items-start gap-3.5 py-3 sm:px-6 sm:py-2 first:sm:pl-0">
-              <Truck className="mt-0.5 shrink-0 text-[#4b6755]" size={19} strokeWidth={1.7} />
-              <div>
-                <h2 className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#24352c]">
+        {/* Promise / Delivery Strip */}
+        <section id="about" className="w-full border-b border-[var(--border-subtle)] px-4 py-6 sm:px-10 sm:py-9 lg:px-14">
+          <div className="feature-strip grid w-full grid-cols-1 gap-4 p-4 sm:grid-cols-3 sm:gap-6 sm:p-6">
+            <div className="flex items-start gap-3.5 rounded-2xl bg-[var(--bg-surface-soft)]/60 p-3.5 sm:p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#c9b07a]/35 bg-[#c9b07a]/12 text-[#8c6e3b] dark:text-[#e5d2ac]">
+                <Truck size={18} strokeWidth={1.8} />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.16em]">
                   Nationwide Delivery
                 </h2>
-                <p className="mt-0.5 text-[11px] leading-5 text-[#667269] sm:text-xs">
+                <p className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
                   Carefully packed and dispatched across Bangladesh.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3.5 py-3 sm:px-6 sm:py-2">
-              <ShieldCheck className="mt-0.5 shrink-0 text-[#4b6755]" size={19} strokeWidth={1.7} />
-              <div>
-                <h2 className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#24352c]">
+            <div className="flex items-start gap-3.5 rounded-2xl bg-[var(--bg-surface-soft)]/60 p-3.5 sm:p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#c9b07a]/35 bg-[#c9b07a]/12 text-[#8c6e3b] dark:text-[#e5d2ac]">
+                <ShieldCheck size={18} strokeWidth={1.8} />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.16em]">
                   Considered Selection
                 </h2>
-                <p className="mt-0.5 text-[11px] leading-5 text-[#667269] sm:text-xs">
+                <p className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
                   Checked for finish, warmth, and everyday utility.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3.5 py-3 sm:px-6 sm:py-2 last:sm:pr-0">
-              <Headphones className="mt-0.5 shrink-0 text-[#4b6755]" size={19} strokeWidth={1.7} />
-              <div>
-                <h2 className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#24352c]">
+            <div className="flex items-start gap-3.5 rounded-2xl bg-[var(--bg-surface-soft)]/60 p-3.5 sm:p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#c9b07a]/35 bg-[#c9b07a]/12 text-[#8c6e3b] dark:text-[#e5d2ac]">
+                <Headphones size={18} strokeWidth={1.8} />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.16em]">
                   Personal Support
                 </h2>
-                <p className="mt-0.5 text-[11px] leading-5 text-[#667269] sm:text-xs">
+                <p className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
                   Direct assistance for orders, gifting, and tracking.
                 </p>
               </div>
@@ -730,16 +728,16 @@ export default function Home() {
 
         {/* Product Collection */}
         <section id="products" className="collection-section w-full px-4 py-10 sm:px-10 sm:py-20 lg:px-14">
-          <div className="flex flex-col justify-between gap-4 border-b border-[#e6e1d5] pb-6 md:flex-row md:items-end">
+          <div className="flex flex-col justify-between gap-4 border-b border-[var(--border-subtle)] pb-6 md:flex-row md:items-end">
             <div>
-              <span className="section-eyebrow text-[10px] font-bold uppercase tracking-[0.26em] text-[#7c8875]">
+              <span className="section-eyebrow text-[10px] font-bold uppercase tracking-[0.26em] text-[var(--text-muted)]">
                 The Catalog
               </span>
-              <h2 className="mt-2 font-serif text-3xl font-normal text-[#1e2d25] sm:text-5xl">
+              <h2 className="mt-2 font-serif text-3xl font-normal sm:text-5xl">
                 Curated Collection
               </h2>
             </div>
-            <p className="max-w-md text-xs leading-6 text-[#636f66] sm:text-sm">
+            <p className="max-w-md text-xs leading-6 text-[var(--text-secondary)] sm:text-sm">
               Discover pieces designed to soften a room, elevate a corner, or serve as a lasting gift.
             </p>
           </div>
@@ -754,8 +752,8 @@ export default function Home() {
                 aria-pressed={category === item}
                 className={`category-pill shrink-0 rounded-full border px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] transition sm:px-4 sm:py-2 sm:text-[11px] ${
                   category === item
-                    ? 'border-[#24352c] bg-[#24352c] text-[#faf9f6]'
-                    : 'border-[#e2dcd0] bg-white text-[#57645a] hover:border-[#24352c] hover:text-[#24352c]'
+                    ? 'border-[#16261e] bg-[#16261e] text-[#faf8f3]'
+                    : 'border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:border-[#c9b07a]'
                 }`}
               >
                 {item}
@@ -764,13 +762,13 @@ export default function Home() {
           </div>
 
           {productError && (
-            <p role="alert" className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-700 sm:text-sm">
+            <p role="alert" className="mt-5 rounded-2xl border border-rose-300/60 bg-rose-500/10 px-4 py-3 text-xs text-rose-600 dark:text-rose-300 sm:text-sm">
               {productError} Sample products are shown below for preview only.
             </p>
           )}
 
           {!loading && products.length === 0 && !productError && (
-            <p className="mt-5 rounded-2xl border border-[#e6e1d5] bg-white px-4 py-3 text-xs text-[#5d6960] sm:text-sm">
+            <p className="mt-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 py-3 text-xs text-[var(--text-secondary)] sm:text-sm">
               Preview listings are shown below. Publish the sample catalog from the admin panel to make them available for checkout.
             </p>
           )}
@@ -780,17 +778,17 @@ export default function Home() {
               {[1, 2, 3, 4].map((item) => (
                 <div
                   key={item}
-                  className="premium-card h-32 animate-pulse rounded-2xl border border-[#e8e3d8] bg-[#efece4] sm:aspect-[4/5] sm:h-auto"
+                  className="premium-card h-32 animate-pulse rounded-2xl bg-[var(--bg-surface-soft)] sm:aspect-[4/5] sm:h-auto"
                 />
               ))}
             </div>
           ) : visibleProducts.length === 0 ? (
-            <div className="mt-8 rounded-3xl border border-dashed border-[#d8d2c5] bg-white px-6 py-14 text-center">
-              <ShoppingBag className="mx-auto text-[#7c8875]" size={26} />
-              <p className="mt-3 font-serif text-2xl text-[#24352c]">
+            <div className="mt-8 rounded-3xl border border-dashed border-[var(--border-strong)] bg-[var(--bg-surface)] px-6 py-14 text-center">
+              <ShoppingBag className="mx-auto text-[var(--text-muted)]" size={26} />
+              <p className="mt-3 font-serif text-2xl">
                 {displayProducts.length === 0 ? 'Our shelves are getting ready.' : 'No matching objects found.'}
               </p>
-              <p className="mt-1.5 text-xs text-[#667269] sm:text-sm">
+              <p className="mt-1.5 text-xs text-[var(--text-secondary)] sm:text-sm">
                 {displayProducts.length === 0
                   ? 'Please check back soon for our first collection.'
                   : 'Try clearing your search or switching categories.'}
@@ -799,7 +797,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setCategory('All')}
-                  className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-[#24352c] underline underline-offset-4"
+                  className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] underline underline-offset-4"
                 >
                   Show all objects
                 </button>
@@ -812,17 +810,17 @@ export default function Home() {
                 return (
                   <article
                     key={product._id}
-                    className="premium-card product-card group flex min-w-0 flex-row items-center gap-3.5 rounded-2xl border border-[#eae5da] bg-white p-2.5 transition hover:border-[#cfc7b7] sm:flex-col sm:items-stretch sm:justify-between sm:gap-0 sm:p-3.5"
+                    className="premium-card product-card group flex min-w-0 flex-row items-center gap-3.5 p-2.5 sm:flex-col sm:items-stretch sm:justify-between sm:gap-0 sm:p-3.5"
                   >
                     <div>
-                      <div className="product-image-frame relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-[#f2efe8] sm:aspect-[4/5] sm:h-auto sm:w-full">
+                      <div className="product-image-frame relative h-24 w-24 shrink-0 overflow-hidden rounded-xl sm:aspect-[4/5] sm:h-auto sm:w-full">
                         {product.badge && (
-                          <span className="product-badge hidden rounded-full border border-[#e4ddd0] bg-[#faf9f6]/95 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-[#24352c] sm:absolute sm:left-2.5 sm:top-2.5 sm:z-10 sm:inline-block">
+                          <span className="product-badge hidden rounded-full bg-[var(--bg-surface)]/95 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.18em] sm:absolute sm:left-2.5 sm:top-2.5 sm:z-10 sm:inline-block">
                             {product.badge}
                           </span>
                         )}
                         {discountPercent && (
-                          <span className="hidden rounded-full bg-[#24352c] px-2 py-0.5 text-[9px] font-bold text-[#e5d2ac] sm:absolute sm:right-2.5 sm:top-2.5 sm:z-10 sm:inline-block">
+                          <span className="hidden rounded-full bg-[#16261e] px-2 py-0.5 text-[9px] font-bold text-[#e5d2ac] sm:absolute sm:right-2.5 sm:top-2.5 sm:z-10 sm:inline-block">
                             -{discountPercent}%
                           </span>
                         )}
@@ -836,12 +834,12 @@ export default function Home() {
                             src={product.image}
                             alt={product.name}
                             loading="lazy"
-                            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                            className="h-full w-full object-cover"
                           />
                         </button>
                         {product.stock <= 0 && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-[#18241d]/55 backdrop-blur-[1px]">
-                            <span className="rounded-full bg-[#faf9f6] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[#24352c] sm:px-4 sm:py-1.5 sm:text-[10px]">
+                          <div className="absolute inset-0 flex items-center justify-center bg-[#0e1813]/60 backdrop-blur-[1px]">
+                            <span className="rounded-full bg-[#faf8f3] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[#16261e] sm:px-4 sm:py-1.5 sm:text-[10px]">
                               Sold Out
                             </span>
                           </div>
@@ -849,14 +847,14 @@ export default function Home() {
                       </div>
 
                       <div className="product-card-info hidden sm:block sm:px-1 sm:pt-4">
-                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#838e7c]">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">
                           {product.category}
                         </p>
-                        <h3 className="mt-1.5 line-clamp-2 min-h-10 font-serif text-lg font-medium leading-snug text-[#1e2d25]">
+                        <h3 className="mt-1.5 line-clamp-2 min-h-10 font-serif text-lg font-medium leading-snug">
                           <button
                             type="button"
                             onClick={() => openProduct(product)}
-                            className="text-left transition hover:text-[#4b6755]"
+                            className="text-left transition"
                           >
                             {product.name}
                           </button>
@@ -865,11 +863,11 @@ export default function Home() {
                         <button
                           type="button"
                           onClick={() => openProduct(product)}
-                          className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-medium text-[#6c786e] hover:text-[#24352c] hover:underline"
+                          className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-medium text-[var(--text-muted)] hover:underline"
                         >
                           {product.reviewCount ? (
                             <>
-                              <Star size={11} className="fill-[#c69f63] text-[#c69f63]" />
+                              <Star size={11} className="fill-[#c9b07a] text-[#c9b07a]" />
                               {product.ratingAverage?.toFixed(1)} ({product.reviewCount})
                             </>
                           ) : (
@@ -878,11 +876,11 @@ export default function Home() {
                         </button>
 
                         <div className="mt-3 flex items-baseline gap-2">
-                          <span className="text-base font-bold text-[#24352c]">
+                          <span className="text-base font-bold">
                             ৳ {product.price}
                           </span>
                           {product.oldPrice && product.oldPrice > product.price && (
-                            <span className="text-xs text-[#9b9f96] line-through">
+                            <span className="text-xs text-[var(--text-muted)] line-through">
                               ৳ {product.oldPrice}
                             </span>
                           )}
@@ -894,38 +892,38 @@ export default function Home() {
                     <div className="flex min-w-0 flex-1 flex-col justify-between sm:hidden">
                       <div>
                         <div className="flex items-center justify-between gap-2">
-                          <p className="truncate text-[9px] font-bold uppercase tracking-[0.18em] text-[#838e7c]">
+                          <p className="truncate text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
                             {product.category}
                           </p>
                           {(discountPercent || product.badge) && (
-                            <span className="shrink-0 rounded-full bg-[#f4f1ea] px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.14em] text-[#315b45]">
+                            <span className="shrink-0 rounded-full bg-[var(--bg-surface-soft)] px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.14em] text-[#8c6e3b] dark:text-[#e5d2ac]">
                               {discountPercent ? `-${discountPercent}%` : product.badge}
                             </span>
                           )}
                         </div>
-                        <h3 className="mt-1 line-clamp-1 font-serif text-sm font-medium text-[#1e2d25]">
+                        <h3 className="mt-1 line-clamp-1 font-serif text-sm font-medium">
                           <button
                             type="button"
                             onClick={() => openProduct(product)}
-                            className="text-left transition hover:text-[#4b6755]"
+                            className="text-left transition"
                           >
                             {product.name}
                           </button>
                         </h3>
                         <div className="mt-1 flex items-center justify-between gap-2">
                           <div className="flex items-baseline gap-1.5">
-                            <span className="text-xs font-bold text-[#24352c]">
+                            <span className="text-xs font-bold">
                               ৳ {product.price}
                             </span>
                             {product.oldPrice && product.oldPrice > product.price && (
-                              <span className="text-[10px] text-[#9b9f96] line-through">
+                              <span className="text-[10px] text-[var(--text-muted)] line-through">
                                 ৳ {product.oldPrice}
                               </span>
                             )}
                           </div>
                           {product.reviewCount ? (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-[#6c786e]">
-                              <Star size={10} className="fill-[#c69f63] text-[#c69f63]" />
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-[var(--text-muted)]">
+                              <Star size={10} className="fill-[#c9b07a] text-[#c9b07a]" />
                               {product.ratingAverage?.toFixed(1)}
                             </span>
                           ) : null}
@@ -934,7 +932,7 @@ export default function Home() {
 
                       <div className="mt-2.5">
                         {product.isSample ? (
-                          <p className="rounded-full bg-[#f4f1ea] px-2.5 py-1.5 text-center text-[9px] font-medium text-[#6c786e]">
+                          <p className="rounded-full bg-[var(--bg-surface-soft)] px-2.5 py-1.5 text-center text-[9px] font-medium text-[var(--text-muted)]">
                             Preview · Publish from Admin
                           </p>
                         ) : (
@@ -943,7 +941,7 @@ export default function Home() {
                               type="button"
                               disabled={product.stock <= 0}
                               onClick={() => updateCart(product._id, 1)}
-                              className="flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full border border-[#d6d0c2] px-2 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-[#24352c] transition hover:border-[#24352c] hover:bg-[#faf9f6] disabled:cursor-not-allowed disabled:opacity-40"
+                              className="flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full border border-[var(--border-strong)] px-2 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] transition hover:border-[#c9b07a] disabled:cursor-not-allowed disabled:opacity-40"
                             >
                               <Plus size={12} /> Bag
                             </button>
@@ -951,7 +949,7 @@ export default function Home() {
                               type="button"
                               disabled={product.stock <= 0}
                               onClick={() => startCheckout([product], { [product._id]: 1 })}
-                              className="flex min-w-0 flex-1 items-center justify-center rounded-full bg-[#24352c] px-2 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[#344b3f] disabled:cursor-not-allowed disabled:bg-slate-400"
+                              className="flex min-w-0 flex-1 items-center justify-center rounded-full bg-[#16261e] px-2 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-[#faf8f3] transition hover:bg-[#243c30] disabled:cursor-not-allowed disabled:opacity-40"
                             >
                               Buy now
                             </button>
@@ -963,7 +961,7 @@ export default function Home() {
                     {/* Desktop Action Footer */}
                     <div className="hidden sm:block sm:px-1 sm:pt-4">
                       {product.isSample ? (
-                        <p className="rounded-full bg-[#f4f1ea] px-3 py-2.5 text-center text-[10px] font-medium text-[#6c786e]">
+                        <p className="rounded-full bg-[var(--bg-surface-soft)] px-3 py-2.5 text-center text-[10px] font-medium text-[var(--text-muted)]">
                           Preview · Publish from Admin
                         </p>
                       ) : (
@@ -972,7 +970,7 @@ export default function Home() {
                             type="button"
                             disabled={product.stock <= 0}
                             onClick={() => updateCart(product._id, 1)}
-                            className="flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full border border-[#d6d0c2] px-2.5 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#24352c] transition hover:border-[#24352c] hover:bg-[#faf9f6] disabled:cursor-not-allowed disabled:opacity-40"
+                            className="flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full border border-[var(--border-strong)] px-2.5 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] transition hover:border-[#c9b07a] disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             <Plus size={13} /> Bag
                           </button>
@@ -980,7 +978,7 @@ export default function Home() {
                             type="button"
                             disabled={product.stock <= 0}
                             onClick={() => startCheckout([product], { [product._id]: 1 })}
-                            className="flex min-w-0 flex-1 items-center justify-center rounded-full bg-[#24352c] px-2.5 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[#344b3f] disabled:cursor-not-allowed disabled:bg-slate-400"
+                            className="flex min-w-0 flex-1 items-center justify-center rounded-full bg-[#16261e] px-2.5 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#faf8f3] transition hover:bg-[#243c30] disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             Buy now
                           </button>
@@ -996,14 +994,14 @@ export default function Home() {
       </main>
 
       {/* Editorial Footer */}
-      <footer id="contact" className="border-t border-[#ded7c8] bg-[#18241d] text-[#faf9f6]">
+      <footer id="contact" className="border-t border-[#c9b07a]/20 bg-[#0e1813] text-[#faf8f3]">
         <div className="grid w-full gap-8 px-5 py-12 sm:grid-cols-2 sm:gap-10 sm:px-10 lg:grid-cols-[1.35fr_0.75fr_1fr] lg:px-14 lg:py-16">
           <div>
             <div className="flex items-center gap-3">
               <img
                 src="/favicon.png"
                 alt=""
-                className="h-9 w-9 rounded-full border border-white/15 object-cover"
+                className="h-9 w-9 rounded-full border border-[#c9b07a]/35 object-cover"
               />
               <span className="font-serif text-xl tracking-[0.22em] text-white">ITTADI</span>
             </div>
@@ -1085,7 +1083,7 @@ export default function Home() {
       {/* Hidden Admin Login Modal */}
       {adminLoginOpen && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/55 px-4 py-8 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4 py-8 backdrop-blur-sm"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget && !adminLoginPending) {
               setAdminLoginOpen(false);
@@ -1096,35 +1094,35 @@ export default function Home() {
             aria-label="Admin sign in"
             aria-modal="true"
             role="dialog"
-            className="glass-panel w-full max-w-sm rounded-3xl border border-[#e3ddd0] bg-[#faf9f6] p-6 shadow-2xl backdrop-blur-2xl sm:p-8"
+            className="glass-panel w-full max-w-sm rounded-3xl p-6 shadow-2xl sm:p-8"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#7c8875]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">
                   Private workspace
                 </p>
-                <h2 className="mt-2 font-serif text-3xl text-[#24352c]">Admin sign in</h2>
+                <h2 className="mt-2 font-serif text-3xl">Admin sign in</h2>
               </div>
               <button
                 type="button"
                 onClick={() => setAdminLoginOpen(false)}
                 disabled={adminLoginPending}
                 aria-label="Close admin sign in"
-                className="rounded-full p-2 text-slate-500 transition hover:bg-white disabled:opacity-40"
+                className="rounded-full p-2 text-[var(--text-muted)] transition hover:bg-[var(--bg-surface-soft)] disabled:opacity-40"
               >
                 <X size={19} />
               </button>
             </div>
-            <p className="mt-3 text-xs leading-6 text-slate-500 sm:text-sm">
+            <p className="mt-3 text-xs leading-6 text-[var(--text-secondary)] sm:text-sm">
               Enter your password to open the product studio.
             </p>
             {adminLoginError && (
-              <p role="alert" className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-xs text-rose-700 sm:text-sm">
+              <p role="alert" className="mt-4 rounded-xl bg-rose-500/10 px-4 py-3 text-xs text-rose-600 dark:text-rose-300 sm:text-sm">
                 {adminLoginError}
               </p>
             )}
             <form onSubmit={handleAdminLogin} className="mt-6">
-              <label htmlFor="store-admin-password" className="text-xs font-semibold text-[#47564b]">
+              <label htmlFor="store-admin-password" className="text-xs font-semibold">
                 Admin password
               </label>
               <input
@@ -1135,13 +1133,13 @@ export default function Home() {
                 autoComplete="current-password"
                 autoFocus
                 required
-                className="mt-2 w-full rounded-xl border border-[#e3ddd0] bg-white px-4 py-3 text-sm text-[#24352c] outline-none transition placeholder:text-slate-400 focus:border-[#24352c] focus:ring-4 focus:ring-[#24352c]/10"
+                className="mt-2 w-full rounded-xl border border-[var(--border-strong)] bg-[var(--bg-surface)] px-4 py-3 text-sm outline-none transition focus:border-[#c9b07a]"
                 placeholder="Enter your password"
               />
               <button
                 type="submit"
                 disabled={adminLoginPending}
-                className="mt-4 w-full rounded-full bg-[#24352c] px-5 py-3.5 text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[#315b45] disabled:cursor-wait disabled:opacity-60"
+                className="mt-4 w-full rounded-full bg-[#16261e] px-5 py-3.5 text-xs font-bold uppercase tracking-[0.16em] text-[#faf8f3] transition hover:bg-[#243c30] disabled:cursor-wait disabled:opacity-60"
               >
                 {adminLoginPending ? 'Checking password…' : 'Open admin panel'}
               </button>
@@ -1159,19 +1157,19 @@ export default function Home() {
             if (event.target === event.currentTarget) setCartOpen(false);
           }}
         >
-          <div className="absolute inset-0 bg-slate-950/45 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
           <section
             aria-label="Shopping bag"
             aria-modal="true"
             role="dialog"
-            className="glass-panel relative flex h-full w-full max-w-md flex-col border-l border-[#e6e1d5] bg-[#faf9f6] shadow-2xl backdrop-blur-2xl"
+            className="glass-panel relative flex h-full w-full max-w-md flex-col border-l shadow-2xl"
           >
-            <div className="flex items-center justify-between border-b border-[#e6e1d5] px-6 py-5">
+            <div className="flex items-center justify-between border-b border-[var(--border-subtle)] px-6 py-5">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#7c8875]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">
                   Selected objects
                 </p>
-                <h2 className="mt-1 font-serif text-2xl text-[#24352c]">
+                <h2 className="mt-1 font-serif text-2xl">
                   Shopping bag ({cartCount})
                 </h2>
               </div>
@@ -1179,7 +1177,7 @@ export default function Home() {
                 type="button"
                 onClick={() => setCartOpen(false)}
                 aria-label="Close shopping bag"
-                className="rounded-full p-2 text-slate-500 transition hover:bg-white"
+                className="rounded-full p-2 text-[var(--text-muted)] transition hover:bg-[var(--bg-surface-soft)]"
               >
                 <X size={20} />
               </button>
@@ -1187,9 +1185,9 @@ export default function Home() {
 
             {cartItems.length === 0 ? (
               <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-                <ShoppingCart size={30} className="text-[#7c8875]" />
-                <p className="mt-4 font-serif text-2xl text-[#24352c]">Your bag is empty.</p>
-                <p className="mt-2 text-xs leading-6 text-slate-500 sm:text-sm">
+                <ShoppingCart size={30} className="text-[var(--text-muted)]" />
+                <p className="mt-4 font-serif text-2xl">Your bag is empty.</p>
+                <p className="mt-2 text-xs leading-6 text-[var(--text-secondary)] sm:text-sm">
                   Explore the collection and add pieces you love.
                 </p>
                 <button
@@ -1198,7 +1196,7 @@ export default function Home() {
                     setCartOpen(false);
                     document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="mt-6 rounded-full bg-[#24352c] px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#315b45]"
+                  className="mt-6 rounded-full bg-[#16261e] px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#faf8f3] transition hover:bg-[#243c30]"
                 >
                   Browse collection
                 </button>
@@ -1209,7 +1207,7 @@ export default function Home() {
                   {cartItems.map((product) => (
                     <div
                       key={product._id}
-                      className="flex gap-4 rounded-2xl border border-[#ece7dc] bg-white p-3"
+                      className="flex gap-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3"
                     >
                       <img
                         src={product.image}
@@ -1217,16 +1215,16 @@ export default function Home() {
                         className="h-20 w-20 rounded-xl object-cover"
                       />
                       <div className="min-w-0 flex-1">
-                        <h3 className="line-clamp-2 font-serif text-sm font-medium text-[#24352c]">
+                        <h3 className="line-clamp-2 font-serif text-sm font-medium">
                           {product.name}
                         </h3>
-                        <p className="mt-1 text-xs font-bold text-[#315b45]">৳ {product.price}</p>
+                        <p className="mt-1 text-xs font-bold text-[#8c6e3b] dark:text-[#e5d2ac]">৳ {product.price}</p>
                         <div className="mt-2.5 flex items-center gap-3">
                           <button
                             type="button"
                             onClick={() => updateCart(product._id, -1)}
                             aria-label={`Remove one ${product.name}`}
-                            className="rounded-full border border-[#e3ddd0] p-1.5 transition hover:bg-[#faf9f6]"
+                            className="rounded-full border border-[var(--border-strong)] p-1.5 transition hover:bg-[var(--bg-surface-soft)]"
                           >
                             <Minus size={12} />
                           </button>
@@ -1238,33 +1236,33 @@ export default function Home() {
                             onClick={() => updateCart(product._id, 1)}
                             aria-label={`Add one ${product.name}`}
                             disabled={cart[product._id] >= Math.min(product.stock, 20)}
-                            className="rounded-full border border-[#e3ddd0] p-1.5 transition hover:bg-[#faf9f6] disabled:opacity-40"
+                            className="rounded-full border border-[var(--border-strong)] p-1.5 transition hover:bg-[var(--bg-surface-soft)] disabled:opacity-40"
                           >
                             <Plus size={12} />
                           </button>
                         </div>
                       </div>
-                      <span className="self-start text-xs font-bold text-[#24352c] sm:text-sm">
+                      <span className="self-start text-xs font-bold sm:text-sm">
                         ৳ {product.price * cart[product._id]}
                       </span>
                     </div>
                   ))}
                 </div>
 
-                <div className="border-t border-[#e6e1d5] bg-white p-6">
+                <div className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-slate-500">Subtotal</span>
-                    <span className="font-serif text-xl font-semibold text-[#24352c]">
+                    <span className="font-medium text-[var(--text-secondary)]">Subtotal</span>
+                    <span className="font-serif text-xl font-semibold">
                       ৳ {cartTotal}
                     </span>
                   </div>
-                  <p className="mt-2 text-xs text-slate-500">
+                  <p className="mt-2 text-xs text-[var(--text-muted)]">
                     Delivery charges are confirmed when placing your order.
                   </p>
                   <button
                     type="button"
                     onClick={() => startCheckout(cartItems, cart)}
-                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-[#24352c] px-5 py-3.5 text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[#315b45]"
+                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-[#16261e] px-5 py-3.5 text-xs font-bold uppercase tracking-[0.16em] text-[#faf8f3] transition hover:bg-[#243c30]"
                   >
                     <Check size={16} /> Checkout &amp; track order
                   </button>
@@ -1272,7 +1270,7 @@ export default function Home() {
                     href={orderLink(cartItems, cart)}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-[#d8d2c5] px-5 py-3 text-xs font-semibold text-[#24352c] transition hover:border-[#24352c]"
+                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-[var(--border-strong)] px-5 py-3 text-xs font-semibold transition hover:border-[#c9b07a]"
                   >
                     Order via WhatsApp
                   </a>
