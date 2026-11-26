@@ -773,26 +773,30 @@ html[data-theme="dark"] .theme-icon-dark {
   }
 }
 
-html[data-theme="dark"] .hero-primary-cta {
-  color: #24352c !important;
-  background-color: #d9c7a6 !important;
+html[data-theme="dark"] .glass-control,
+html[data-theme="dark"] .glass-control:hover,
+html[data-theme="dark"] .glass-control:focus-within {
+  border-color: transparent !important;
+  background: rgba(30, 41, 59, 0.72) !important;
+  box-shadow: none !important;
 }
 
-html[data-theme="dark"] .hero-primary-cta:hover {
-  background-color: #fff !important;
+html[data-theme="dark"] .glass-control input,
+html[data-theme="dark"] input[type="search"] {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
-html[data-theme="dark"] .hero-secondary-cta {
-  color: #fff !important;
-  background-color: rgba(255, 255, 255, 0.025) !important;
+html[data-theme="dark"] .glass-nav a,
+html[data-theme="dark"] .glass-nav button {
+  border-color: transparent !important;
 }
 
-html[data-theme="dark"] .hero-secondary-cta:hover {
-  background-color: rgba(255, 255, 255, 0.12) !important;
-}
-
-html[data-theme="dark"] .category-pill[aria-pressed="true"] {
-  border-color: #d9c7a6;
-  color: #17241e;
-  background: #d9c7a6 !important;
+html[data-theme="dark"] .customer-actions,
+html[data-theme="dark"] .customer-actions > a,
+html[data-theme="dark"] .customer-actions > button {
+  border-color: rgba(148, 163, 184, 0.14) !important;
+  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.35) !important;
 }
