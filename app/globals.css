@@ -745,34 +745,6 @@ html[data-theme="dark"] .theme-icon-dark {
     height: 2.65rem;
   }
 
-  html[data-theme="dark"] .customer-actions {
-    border-color: rgba(148, 163, 184, 0.24);
-    background: rgba(15, 23, 42, 0.84);
-    box-shadow: 0 12px 34px rgba(2, 6, 23, 0.45), inset 0 1px 0 rgba(226, 232, 240, 0.08);
-  }
-
-  .showcase-float-top {
-    right: -0.2rem;
-    padding: 0.55rem 0.7rem;
-    font-size: 0.55rem;
-  }
-
-  .showcase-float-bottom {
-    bottom: 9%;
-    left: -0.3rem;
-    padding: 0.6rem 0.75rem;
-  }
-
-  .showcase-emblem {
-    width: 4.5rem;
-    border-radius: 1.5rem;
-  }
-
-  .feature-strip {
-    border-radius: 1.15rem;
-  }
-}
-
 html[data-theme="dark"] .glass-control,
 html[data-theme="dark"] .glass-control:hover,
 html[data-theme="dark"] .glass-control:focus-within {
