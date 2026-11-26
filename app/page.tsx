@@ -64,12 +64,31 @@ const categories = [
 
 const orderNumber = '8801869662849';
 
+function deduplicateProducts(list: Product[]): Product[] {
+  const seenIds = new Set<string>();
+  const seenKeys = new Set<string>();
+  const result: Product[] = [];
+
+  for (const item of list) {
+    if (!item || !item._id) continue;
+    const idKey = String(item._id).trim();
+    const contentKey = `${String(item.name || '').trim().toLowerCase()}::${String(item.price)}::${String(item.image || '').trim()}`;
+    if (seenIds.has(idKey) || seenKeys.has(contentKey)) continue;
+    seenIds.add(idKey);
+    seenKeys.add(contentKey);
+    result.push(item);
+  }
+
+  return result;
+}
+
 export default function Home() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<Record<string, number>>({});
   const [cartHydrated, setCartHydrated] = useState(false);
   const [search, setSearch] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
   const [category, setCategory] = useState('All');
   const [cartOpen, setCartOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -88,6 +107,17 @@ export default function Home() {
     }[] | null
   >(null);
   const logoLastClick = useRef(0);
+  const searchAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (searchAreaRef.current && !searchAreaRef.current.contains(event.target as Node)) {
+        setSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -99,14 +129,15 @@ export default function Home() {
           throw new Error(result.error || 'Products could not be loaded.');
         }
         if (active) {
-          setProducts(result.data);
+          const cleanProducts = deduplicateProducts(Array.isArray(result.data) ? result.data : []);
+          setProducts(cleanProducts);
           try {
             const savedCart = window.localStorage.getItem('ittadi-cart');
             if (savedCart) {
               const parsedCart: unknown = JSON.parse(savedCart);
               if (parsedCart && typeof parsedCart === 'object' && !Array.isArray(parsedCart)) {
                 const productsById = new Map(
-                  (result.data as Product[]).map((product) => [product._id, product]),
+                  cleanProducts.map((product) => [product._id, product]),
                 );
                 const restoredCart = Object.entries(parsedCart).reduce<Record<string, number>>(
                   (restored, [productId, quantity]) => {
@@ -167,10 +198,9 @@ export default function Home() {
           if (!response.ok || !result.success) {
             throw new Error(result.error || 'Products could not be refreshed.');
           }
-          setProducts(result.data);
-          const productsById = new Map(
-            (result.data as Product[]).map((product) => [product._id, product]),
-          );
+          const cleanProducts = deduplicateProducts(Array.isArray(result.data) ? result.data : []);
+          setProducts(cleanProducts);
+          const productsById = new Map(cleanProducts.map((product) => [product._id, product]));
           setCart((current) =>
             Object.entries(current).reduce<Record<string, number>>((next, [id, quantity]) => {
               const product = productsById.get(id);
@@ -187,18 +217,35 @@ export default function Home() {
     return () => window.clearInterval(timer);
   }, []);
 
-  const displayProducts = products.length > 0 ? products : sampleProducts;
+  const displayProducts = useMemo(
+    () => deduplicateProducts(products.length > 0 ? products : sampleProducts),
+    [products],
+  );
+
+  const normalizedSearch = search.trim().toLowerCase();
+
+  const searchDropdownMatches = useMemo(() => {
+    if (!normalizedSearch) return [];
+    return displayProducts
+      .filter((product) =>
+        `${product.name} ${product.category} ${product.description || ''}`
+          .toLowerCase()
+          .includes(normalizedSearch),
+      )
+      .slice(0, 6);
+  }, [displayProducts, normalizedSearch]);
 
   const visibleProducts = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
     return displayProducts.filter((product) => {
       const matchesCategory = category === 'All' || product.category === category;
       const matchesSearch =
         !normalizedSearch ||
-        `${product.name} ${product.category}`.toLowerCase().includes(normalizedSearch);
+        `${product.name} ${product.category} ${product.description || ''}`
+          .toLowerCase()
+          .includes(normalizedSearch);
       return matchesCategory && matchesSearch;
     });
-  }, [category, displayProducts, search]);
+  }, [category, displayProducts, normalizedSearch]);
 
   const availableCategories = useMemo(
     () => Array.from(new Set([...categories, ...displayProducts.map((product) => product.category)])),
@@ -265,6 +312,7 @@ export default function Home() {
   };
 
   const openProduct = (product: Product) => {
+    setSearchFocused(false);
     router.push(`/product/${product._id}`);
   };
 
@@ -308,8 +356,10 @@ export default function Home() {
     return Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100);
   };
 
+  const showSearchDropdown = searchFocused && normalizedSearch.length > 0;
+
   return (
-    <div className="storefront-shell min-h-screen w-full overflow-x-hidden bg-[#faf8f3] text-[#16261e] selection:bg-[#c9b07a] selection:text-[#16261e]">
+    <div className="storefront-shell min-h-screen w-full overflow-x-hidden bg-[var(--bg-page)] text-[var(--text-primary)] selection:bg-[#c9b07a] selection:text-[#14241c]">
       {/* Top Concierge Bar */}
       <div className="announcement-bar flex w-full flex-wrap items-center justify-between gap-2 border-b border-[#c9b07a]/15 px-4 py-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#f3efe6] sm:px-8 lg:px-14">
         <a
@@ -345,7 +395,10 @@ export default function Home() {
 
       {/* Sticky Header */}
       <header className="glass-nav sticky top-0 z-30 border-b backdrop-blur-xl backdrop-saturate-150">
-        <div className="flex w-full flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-8 lg:flex-nowrap lg:px-14 lg:py-3.5">
+        <div
+          ref={searchAreaRef}
+          className="flex w-full flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-8 lg:flex-nowrap lg:px-14 lg:py-3.5"
+        >
           {/* Brand Emblem + Wordmark */}
           <button
             type="button"
@@ -395,17 +448,86 @@ export default function Home() {
 
           {/* Utility Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2.5">
-            <label className="glass-control hidden items-center gap-2 rounded-full px-4 py-2 text-[#8d9991] transition lg:flex lg:w-60">
-              <Search size={15} aria-hidden="true" className="shrink-0 text-[#c9b07a]" />
-              <input
-                type="search"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search objects..."
-                aria-label="Search products"
-                className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-[#8d9991]"
-              />
-            </label>
+            <div className="relative hidden lg:block lg:w-64">
+              <label className="glass-control flex items-center gap-2 rounded-full px-4 py-2 text-[var(--text-muted)] transition">
+                <Search size={15} aria-hidden="true" className="shrink-0 text-[#c9b07a]" />
+                <input
+                  type="search"
+                  value={search}
+                  onFocus={() => setSearchFocused(true)}
+                  onChange={(event) => {
+                    setSearch(event.target.value);
+                    setSearchFocused(true);
+                  }}
+                  placeholder="Search objects..."
+                  aria-label="Search products"
+                  className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-[var(--text-muted)]"
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch('')}
+                    aria-label="Clear search"
+                    className="rounded-full p-0.5 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                  >
+                    <X size={13} />
+                  </button>
+                )}
+              </label>
+
+              {showSearchDropdown && (
+                <div
+                  role="listbox"
+                  aria-label="Search results"
+                  className="glass-panel absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 max-h-96 overflow-y-auto rounded-2xl p-2 shadow-2xl"
+                >
+                  {searchDropdownMatches.length === 0 ? (
+                    <p className="px-3 py-4 text-center text-xs text-[var(--text-secondary)]">
+                      No items found for &ldquo;{search.trim()}&rdquo;.
+                    </p>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                        <span>Matching items</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSearchFocused(false);
+                            document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+                          }}
+                          className="text-[#8c6e3b] hover:underline dark:text-[#e5d2ac]"
+                        >
+                          See all ({visibleProducts.length})
+                        </button>
+                      </div>
+                      <div className="space-y-1">
+                        {searchDropdownMatches.map((item) => (
+                          <button
+                            key={item._id}
+                            type="button"
+                            onClick={() => openProduct(item)}
+                            className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-[var(--bg-surface-soft)]"
+                          >
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="h-11 w-11 shrink-0 rounded-lg object-cover"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate font-serif text-xs font-medium">{item.name}</p>
+                              <p className="text-[10px] text-[var(--text-muted)]">{item.category}</p>
+                            </div>
+                            <span className="shrink-0 text-xs font-bold text-[#8c6e3b] dark:text-[#e5d2ac]">
+                              ৳ {item.price}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
 
             <Link
               href="/account"
@@ -435,29 +557,86 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Mobile Search Bar */}
-          <div className="w-full pt-1 lg:hidden">
-            <label className="glass-control flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2 text-[#8d9991] transition">
+          {/* Mobile Search Bar + Instant Dropdown */}
+          <div className="relative w-full pt-1 lg:hidden">
+            <label className="glass-control flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2 text-[var(--text-muted)] transition">
               <Search size={15} aria-hidden="true" className="shrink-0 text-[#c9b07a]" />
               <input
                 type="search"
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setSearchFocused(true);
+                }}
                 placeholder="Search aesthetic lights, planters, decor..."
                 aria-label="Search products"
-                className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-[#8d9991]"
+                className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-[var(--text-muted)]"
               />
               {search && (
                 <button
                   type="button"
                   onClick={() => setSearch('')}
                   aria-label="Clear search"
-                  className="rounded-full p-0.5 text-[#8d9991]"
+                  className="rounded-full p-0.5 text-[var(--text-muted)]"
                 >
                   <X size={14} />
                 </button>
               )}
             </label>
+
+            {showSearchDropdown && (
+              <div
+                role="listbox"
+                aria-label="Search results"
+                className="glass-panel absolute left-0 right-0 top-[calc(100%+0.35rem)] z-50 max-h-80 overflow-y-auto rounded-2xl p-2 shadow-2xl"
+              >
+                {searchDropdownMatches.length === 0 ? (
+                  <p className="px-3 py-4 text-center text-xs text-[var(--text-secondary)]">
+                    No items found for &ldquo;{search.trim()}&rdquo;.
+                  </p>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                      <span>Search results</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchFocused(false);
+                          document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="text-[#8c6e3b] hover:underline dark:text-[#e5d2ac]"
+                      >
+                        View all ({visibleProducts.length})
+                      </button>
+                    </div>
+                    <div className="space-y-1">
+                      {searchDropdownMatches.map((item) => (
+                        <button
+                          key={item._id}
+                          type="button"
+                          onClick={() => openProduct(item)}
+                          className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-[var(--bg-surface-soft)]"
+                        >
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="h-11 w-11 shrink-0 rounded-lg object-cover"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-serif text-xs font-medium">{item.name}</p>
+                            <p className="text-[10px] text-[var(--text-muted)]">{item.category}</p>
+                          </div>
+                          <span className="shrink-0 text-xs font-bold text-[#8c6e3b] dark:text-[#e5d2ac]">
+                            ৳ {item.price}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -1283,7 +1462,7 @@ export default function Home() {
               if (!result.success) {
                 throw new Error(result.error || 'Products could not be refreshed.');
               }
-              setProducts(result.data);
+              setProducts(deduplicateProducts(Array.isArray(result.data) ? result.data : []));
             })
             .catch((error: unknown) => {
               setProductError(
