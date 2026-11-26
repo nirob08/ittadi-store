@@ -738,13 +738,7 @@ html[data-theme="dark"] .theme-icon-dark {
     box-shadow: 0 12px 34px rgba(24, 35, 29, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.8);
     transform: translateX(-50%);
   }
-
-  .customer-actions > button,
-  .customer-actions > a {
-    width: 2.65rem;
-    height: 2.65rem;
-  }
-
+}
 html[data-theme="dark"] .glass-control,
 html[data-theme="dark"] .glass-control:hover,
 html[data-theme="dark"] .glass-control:focus-within {
