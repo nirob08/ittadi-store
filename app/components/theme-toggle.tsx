@@ -5,20 +5,33 @@ import { Moon, Sun } from 'lucide-react';
 
 const THEME_KEY = 'ittadi-theme';
 
+function applyTheme(isDark: boolean) {
+  const mode = isDark ? 'dark' : 'light';
+  document.documentElement.dataset.theme = mode;
+  document.documentElement.style.colorScheme = mode;
+}
+
 export default function ThemeToggle() {
   useEffect(() => {
     try {
       const savedTheme = window.localStorage.getItem(THEME_KEY);
-      const isDark = savedTheme === 'dark';
-      document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+      if (savedTheme === 'dark' || savedTheme === 'light') {
+        applyTheme(savedTheme === 'dark');
+        return;
+      }
+      const prefersDark =
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(prefersDark);
     } catch (error) {
       console.error('The saved display theme could not be loaded:', error);
+      applyTheme(false);
     }
   }, []);
 
   const toggleTheme = () => {
     const nextDark = document.documentElement.dataset.theme !== 'dark';
-    document.documentElement.dataset.theme = nextDark ? 'dark' : 'light';
+    applyTheme(nextDark);
     try {
       window.localStorage.setItem(THEME_KEY, nextDark ? 'dark' : 'light');
     } catch (error) {
@@ -32,10 +45,10 @@ export default function ThemeToggle() {
       onClick={toggleTheme}
       aria-label="Toggle dark and light mode"
       title="Toggle dark and light mode"
-      className="theme-toggle inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#e5e2dc] bg-white/80 text-[#315b45] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className="theme-toggle inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border-strong)] bg-[var(--bg-surface)] text-[#8c6e3b] shadow-sm transition hover:-translate-y-0.5 hover:border-[#c9b07a] hover:shadow-md dark:text-[#e5d2ac] sm:h-10 sm:w-10"
     >
-      <Moon size={17} aria-hidden="true" className="theme-icon-light" />
-      <Sun size={17} aria-hidden="true" className="theme-icon-dark" />
+      <Moon size={16} aria-hidden="true" className="theme-icon-light" />
+      <Sun size={16} aria-hidden="true" className="theme-icon-dark" />
     </button>
   );
 }

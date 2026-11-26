@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import './globals.css';
 import { Geist, Geist_Mono } from 'next/font/google';
 
@@ -11,7 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Ittadi | Little things, lovely living',
   description:
     'Thoughtful gifts, charming home decor, and everyday delights delivered across Bangladesh.',
@@ -27,6 +28,7 @@ const themeInitScript = `
     var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     var theme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : (prefersDark ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.style.colorScheme = theme;
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -49,7 +51,9 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col bg-[var(--bg-page)] text-[var(--text-primary)]">
+        {children}
+      </body>
     </html>
   );
 }

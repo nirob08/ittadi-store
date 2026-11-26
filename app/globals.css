@@ -599,7 +599,7 @@ button:not(:disabled) {
   box-shadow: 0 8px 24px rgba(15, 27, 21, 0.04);
 }
 
-/* Frameless Floating Action Dock (No blurred box frame) */
+/* Frameless Floating Action Dock */
 .customer-actions,
 .customer-actions > div,
 .customer-actions > a,

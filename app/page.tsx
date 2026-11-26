@@ -311,7 +311,7 @@ export default function Home() {
   return (
     <div className="storefront-shell min-h-screen w-full overflow-x-hidden bg-[#faf8f3] text-[#16261e] selection:bg-[#c9b07a] selection:text-[#16261e]">
       {/* Top Concierge Bar */}
-      <div className="announcement-bar flex w-full flex-wrap items-center justify-between gap-2 border-b border-white/10 px-4 py-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#f3efe6] sm:px-8 lg:px-14">
+      <div className="announcement-bar flex w-full flex-wrap items-center justify-between gap-2 border-b border-[#c9b07a]/15 px-4 py-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#f3efe6] sm:px-8 lg:px-14">
         <a
           className="truncate transition hover:text-[#e5d2ac]"
           href="https://wa.me/880153410524?text=Assalamu%20alaikum%2C%20I%20would%20like%20to%20place%20an%20order."
@@ -321,7 +321,7 @@ export default function Home() {
           Concierge &amp; WhatsApp · +880 1534-10524
         </a>
         <div className="flex items-center gap-2.5">
-          <span className="hidden text-[#d9c7a6]/80 sm:inline">Nationwide Dispatch</span>
+          <span className="hidden text-[#d9c7a6]/85 sm:inline">Nationwide Dispatch</span>
           <a
             aria-label="Ittadi on Facebook"
             className="rounded-full p-1 text-white/80 transition hover:bg-white/10 hover:text-white"
@@ -345,8 +345,8 @@ export default function Home() {
 
       {/* Sticky Header */}
       <header className="glass-nav sticky top-0 z-30 border-b backdrop-blur-xl backdrop-saturate-150">
-        <div className="flex w-full flex-wrap items-center justify-between gap-2.5 px-4 py-3 sm:px-8 lg:flex-nowrap lg:px-14 lg:py-4">
-          {/* Brand Logo */}
+        <div className="flex w-full flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-8 lg:flex-nowrap lg:px-14 lg:py-3.5">
+          {/* Brand Emblem + Wordmark */}
           <button
             type="button"
             onClick={() => {
@@ -364,22 +364,17 @@ export default function Home() {
                 void openAdmin();
               }
             }}
-            className="group flex shrink-0 items-center gap-2.5 rounded-full py-0.5 text-left"
+            className="group flex shrink-0 items-center gap-3 rounded-full py-0.5 text-left"
             title="Double-click or double-tap for admin"
             aria-label="Ittadi home. Double-click, double-tap, or press Enter for admin login."
           >
-            <img
-              src="/favicon.png"
-              alt=""
-              draggable="false"
-              className="h-9 w-9 rounded-full border border-[#c9b07a]/45 object-cover transition-transform duration-300 group-hover:scale-105 sm:h-10 sm:w-10"
-            />
+            <BrandMark />
             <div className="flex flex-col">
-              <span className="brand-wordmark font-serif text-base font-semibold tracking-[0.2em] sm:text-xl">
+              <span className="brand-wordmark font-serif text-lg font-semibold tracking-[0.24em] sm:text-xl">
                 ITTADI
               </span>
-              <span className="hidden text-[8px] font-semibold uppercase tracking-[0.28em] text-[#7c8875] sm:block">
-                Edition No. 01
+              <span className="text-[8px] font-semibold uppercase tracking-[0.3em] text-[#c9b07a]">
+                Curated Living
               </span>
             </div>
           </button>
@@ -400,15 +395,15 @@ export default function Home() {
 
           {/* Utility Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2.5">
-            <label className="glass-control hidden items-center gap-2 rounded-full px-4 py-2 text-[#7c8875] transition lg:flex lg:w-60">
-              <Search size={15} aria-hidden="true" className="shrink-0" />
+            <label className="glass-control hidden items-center gap-2 rounded-full px-4 py-2 text-[#8d9991] transition lg:flex lg:w-60">
+              <Search size={15} aria-hidden="true" className="shrink-0 text-[#c9b07a]" />
               <input
                 type="search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search objects..."
                 aria-label="Search products"
-                className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-[#989d92]"
+                className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-[#8d9991]"
               />
             </label>
 
@@ -419,7 +414,7 @@ export default function Home() {
               aria-label="Open customer account"
               className="glass-control flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full px-2.5 text-xs transition sm:h-10 sm:px-4"
             >
-              <CircleUserRound size={16} />
+              <CircleUserRound size={16} className="text-[#c9b07a]" />
               <span className="hidden text-[11px] font-semibold uppercase tracking-[0.14em] sm:inline">
                 Account
               </span>
@@ -430,10 +425,10 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setCartOpen(true)}
-              className="relative flex h-9 items-center justify-center gap-1.5 rounded-full bg-[#16261e] px-3 text-[#faf8f3] shadow-sm transition hover:bg-[#243c30] sm:h-10 sm:px-4"
+              className="relative flex h-9 items-center justify-center gap-1.5 rounded-full border border-[#c9b07a]/35 bg-[#16261e] px-3.5 text-[#fbf8f1] shadow-sm transition hover:border-[#c9b07a] hover:bg-[#21382c] sm:h-10 sm:px-4"
               aria-label={`Open shopping bag, ${cartCount} items`}
             >
-              <ShoppingBag size={15} />
+              <ShoppingBag size={15} className="text-[#e5d2ac]" />
               <span className="text-[10px] font-bold uppercase tracking-[0.14em]">
                 Bag{cartCount > 0 ? ` (${cartCount})` : ''}
               </span>
@@ -442,22 +437,22 @@ export default function Home() {
 
           {/* Mobile Search Bar */}
           <div className="w-full pt-1 lg:hidden">
-            <label className="glass-control flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2 text-[#7c8875] transition">
-              <Search size={15} aria-hidden="true" className="shrink-0 text-[#6e7969]" />
+            <label className="glass-control flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2 text-[#8d9991] transition">
+              <Search size={15} aria-hidden="true" className="shrink-0 text-[#c9b07a]" />
               <input
                 type="search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search aesthetic lights, planters, decor..."
                 aria-label="Search products"
-                className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-[#989d92]"
+                className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-[#8d9991]"
               />
               {search && (
                 <button
                   type="button"
                   onClick={() => setSearch('')}
                   aria-label="Clear search"
-                  className="rounded-full p-0.5 text-[#7c8875]"
+                  className="rounded-full p-0.5 text-[#8d9991]"
                 >
                   <X size={14} />
                 </button>
@@ -474,9 +469,9 @@ export default function Home() {
           <div className="hero-glow hero-glow-b" />
           <div className="hero-grid-pattern" />
 
-          <div className="relative z-10 grid w-full items-center gap-8 px-4 py-6 sm:gap-12 sm:px-10 sm:py-14 lg:min-h-[650px] lg:grid-cols-[1.12fr_0.88fr] lg:gap-16 lg:px-14 lg:py-20">
+          <div className="relative z-10 grid w-full items-center gap-8 px-4 py-6 sm:gap-12 sm:px-10 sm:py-14 lg:min-h-[640px] lg:grid-cols-[1.12fr_0.88fr] lg:gap-16 lg:px-14 lg:py-20">
             {/* Mobile Compact Editorial Banner */}
-            <div className="relative overflow-hidden rounded-3xl border border-[#c9b07a]/25 bg-[#15241c]/90 text-white shadow-[0_22px_50px_-20px_rgba(0,0,0,0.45)] lg:hidden">
+            <div className="relative overflow-hidden rounded-3xl border border-[#c9b07a]/25 bg-[#122019]/90 text-white shadow-[0_24px_55px_-20px_rgba(0,0,0,0.5)] lg:hidden">
               <div className="grid grid-cols-[1.15fr_0.85fr] items-center">
                 <div className="p-5 sm:p-7">
                   <span className="inline-block rounded-full border border-[#c9b07a]/35 bg-[#c9b07a]/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-[#e5d2ac]">
@@ -507,7 +502,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="relative h-full min-h-[196px] overflow-hidden bg-[#1e3127] sm:min-h-[240px]">
+                <div className="relative h-full min-h-[196px] overflow-hidden bg-[#1a2c23] sm:min-h-[240px]">
                   {featuredLead?.image ? (
                     <img
                       src={featuredLead.image}
@@ -519,7 +514,7 @@ export default function Home() {
                       Curated Living
                     </div>
                   )}
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#15241c]/55 via-transparent to-transparent" />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#122019]/60 via-transparent to-transparent" />
                 </div>
               </div>
             </div>
@@ -567,9 +562,9 @@ export default function Home() {
             </div>
 
             {/* Desktop Featured Showcase Card */}
-            <div className="hero-showcase relative mx-auto hidden w-full max-w-lg lg:block">
-              <div className="rounded-[2rem] border border-[#d9c7a6]/25 bg-white/10 p-4 shadow-[0_28px_75px_-20px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[1.5rem] bg-[#192921]">
+            <div className="hero-showcase relative mx-auto hidden w-full max-w-[27rem] lg:block">
+              <div className="rounded-[1.75rem] border border-[#d9c7a6]/30 bg-[#122019]/75 p-2.5 shadow-[0_30px_80px_-24px_rgba(0,0,0,0.65)]">
+                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[1.3rem] bg-[#182720]">
                   {featuredLead?.image ? (
                     <img
                       src={featuredLead.image}
@@ -577,7 +572,7 @@ export default function Home() {
                       className="h-full w-full object-cover transition duration-700 hover:scale-[1.03]"
                     />
                   ) : (
-                    <div className="flex h-full w-full flex-col items-center justify-center bg-[#192921] p-8 text-center">
+                    <div className="flex h-full w-full flex-col items-center justify-center bg-[#182720] p-8 text-center">
                       <span className="text-[10px] font-bold uppercase tracking-[0.26em] text-[#d9c7a6]">
                         ITTADI ARCHIVE
                       </span>
@@ -587,12 +582,12 @@ export default function Home() {
                     </div>
                   )}
 
-                  <div className="absolute inset-x-3.5 bottom-3.5 flex items-end justify-between gap-4 rounded-2xl border border-[#d9c7a6]/30 bg-[#121f18]/90 p-4 text-[#fbf8f1] shadow-xl backdrop-blur-md">
+                  <div className="absolute inset-x-3 bottom-3 flex items-end justify-between gap-3 rounded-xl border border-[#d9c7a6]/25 bg-[#0d1612]/90 px-4 py-3 text-[#fbf8f1] backdrop-blur-md">
                     <div className="min-w-0">
-                      <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[#d9c7a6]">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.24em] text-[#d9c7a6]">
                         Featured Piece
                       </p>
-                      <p className="mt-1 truncate font-serif text-lg text-[#fbf8f1]">
+                      <p className="mt-0.5 truncate font-serif text-base text-[#fbf8f1]">
                         {featuredLead?.name || 'Signature Home Objects'}
                       </p>
                       {featuredLead && (
@@ -606,9 +601,9 @@ export default function Home() {
                         type="button"
                         onClick={() => openProduct(featuredLead)}
                         aria-label={`Explore ${featuredLead.name}`}
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#d9c7a6] text-[#122019] transition hover:bg-white"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#d9c7a6] text-[#122019] transition hover:bg-white"
                       >
-                        <ArrowUpRight size={17} />
+                        <ArrowUpRight size={16} />
                       </button>
                     )}
                   </div>
@@ -682,7 +677,7 @@ export default function Home() {
         {/* Promise / Delivery Strip */}
         <section id="about" className="w-full border-b border-[var(--border-subtle)] px-4 py-6 sm:px-10 sm:py-9 lg:px-14">
           <div className="feature-strip grid w-full grid-cols-1 gap-4 p-4 sm:grid-cols-3 sm:gap-6 sm:p-6">
-            <div className="flex items-start gap-3.5 rounded-2xl bg-[var(--bg-surface-soft)]/60 p-3.5 sm:p-4">
+            <div className="flex items-start gap-3.5 rounded-2xl bg-[var(--bg-surface-soft)]/70 p-3.5 sm:p-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#c9b07a]/35 bg-[#c9b07a]/12 text-[#8c6e3b] dark:text-[#e5d2ac]">
                 <Truck size={18} strokeWidth={1.8} />
               </div>
@@ -696,7 +691,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex items-start gap-3.5 rounded-2xl bg-[var(--bg-surface-soft)]/60 p-3.5 sm:p-4">
+            <div className="flex items-start gap-3.5 rounded-2xl bg-[var(--bg-surface-soft)]/70 p-3.5 sm:p-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#c9b07a]/35 bg-[#c9b07a]/12 text-[#8c6e3b] dark:text-[#e5d2ac]">
                 <ShieldCheck size={18} strokeWidth={1.8} />
               </div>
@@ -710,7 +705,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex items-start gap-3.5 rounded-2xl bg-[var(--bg-surface-soft)]/60 p-3.5 sm:p-4">
+            <div className="flex items-start gap-3.5 rounded-2xl bg-[var(--bg-surface-soft)]/70 p-3.5 sm:p-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#c9b07a]/35 bg-[#c9b07a]/12 text-[#8c6e3b] dark:text-[#e5d2ac]">
                 <Headphones size={18} strokeWidth={1.8} />
               </div>
@@ -998,12 +993,8 @@ export default function Home() {
         <div className="grid w-full gap-8 px-5 py-12 sm:grid-cols-2 sm:gap-10 sm:px-10 lg:grid-cols-[1.35fr_0.75fr_1fr] lg:px-14 lg:py-16">
           <div>
             <div className="flex items-center gap-3">
-              <img
-                src="/favicon.png"
-                alt=""
-                className="h-9 w-9 rounded-full border border-[#c9b07a]/35 object-cover"
-              />
-              <span className="font-serif text-xl tracking-[0.22em] text-white">ITTADI</span>
+              <BrandMark />
+              <span className="font-serif text-xl tracking-[0.24em] text-white">ITTADI</span>
             </div>
             <p className="mt-3.5 max-w-sm text-xs leading-6 text-white/65 sm:text-sm">
               Adding quiet charm to your space &amp; daily ritual. Thoughtfully curated home accents, lighting, and gifts across Bangladesh.
@@ -1303,6 +1294,27 @@ export default function Home() {
         onCloseCheckout={() => setCheckoutItems(null)}
       />
     </div>
+  );
+}
+
+function BrandMark() {
+  return (
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#c9b07a]/55 bg-[#122019] text-[#e5d2ac] shadow-[0_4px_14px_rgba(0,0,0,0.22)] transition-transform duration-300 group-hover:scale-105 sm:h-10 sm:w-10">
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 32 32"
+        className="h-5 w-5"
+        fill="none"
+      >
+        <circle cx="16" cy="16" r="12.5" stroke="currentColor" strokeWidth="1.2" opacity="0.45" />
+        <path
+          d="M16 7.5V24.5M12.2 10.5H19.8M12.2 21.5H19.8"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+        />
+      </svg>
+    </span>
   );
 }
 
