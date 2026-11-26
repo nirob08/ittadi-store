@@ -3,7 +3,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag, Star } from 'lucide-react';
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Minus,
+  Plus,
+  ShoppingBag,
+  Sparkles,
+  Star,
+} from 'lucide-react';
 import CustomerHub from '@/app/components/customer-hub';
 import ThemeToggle from '@/app/components/theme-toggle';
 import { sampleProducts } from '@/lib/sample-products';
@@ -78,12 +87,16 @@ export default function ProductDetails({ productId }: { productId: string }) {
     Promise.all([
       fetch(`/api/products/${productId}`, { cache: 'no-store' }).then(async (response) => {
         const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.error || 'Product details could not be loaded.');
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Product details could not be loaded.');
+        }
         return result.data as Product;
       }),
       fetch('/api/products', { cache: 'no-store' }).then(async (response) => {
         const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.error || 'Related products could not be loaded.');
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Related products could not be loaded.');
+        }
         return result.data as Product[];
       }),
     ])
@@ -97,12 +110,16 @@ export default function ProductDetails({ productId }: { productId: string }) {
           average: loadedProduct.ratingAverage || 0,
           count: loadedProduct.reviewCount || 0,
         });
-        setRelatedProducts(allProducts.filter(
-          (item) => item.category === loadedProduct.category && item._id !== loadedProduct._id,
-        ));
+        setRelatedProducts(
+          allProducts.filter(
+            (item) => item.category === loadedProduct.category && item._id !== loadedProduct._id,
+          ),
+        );
       })
       .catch((loadError: unknown) => {
-        if (active) setError(loadError instanceof Error ? loadError.message : 'Product details could not be loaded.');
+        if (active) {
+          setError(loadError instanceof Error ? loadError.message : 'Product details could not be loaded.');
+        }
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -121,8 +138,8 @@ export default function ProductDetails({ productId }: { productId: string }) {
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'Reviews could not be loaded.');
         if (active) {
-          setReviews(result.reviews);
-          setReviewSummary(result.summary);
+          setReviews(result.reviews || []);
+          setReviewSummary(result.summary || { average: 0, count: 0 });
         }
       })
       .catch((loadError: unknown) => {
@@ -134,14 +151,22 @@ export default function ProductDetails({ productId }: { productId: string }) {
   }, [product]);
 
   const selectedProduct = product;
+
   const specificationLines = useMemo(
     () => (product?.specifications || '').split('\n').map((line) => line.trim()).filter(Boolean),
     [product?.specifications],
   );
 
+  const discountPercent = useMemo(() => {
+    if (!selectedProduct?.oldPrice || selectedProduct.oldPrice <= selectedProduct.price) return null;
+    return Math.round(((selectedProduct.oldPrice - selectedProduct.price) / selectedProduct.oldPrice) * 100);
+  }, [selectedProduct]);
+
   const changeQuantity = (change: number) => {
     if (!product) return;
-    setQuantity((current) => Math.min(Math.max(1, current + change), Math.max(1, Math.min(product.stock, 20))));
+    setQuantity((current) =>
+      Math.min(Math.max(1, current + change), Math.max(1, Math.min(product.stock, 20))),
+    );
   };
 
   const addToBag = () => {
@@ -191,7 +216,7 @@ export default function ProductDetails({ productId }: { productId: string }) {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center text-sm text-[var(--text-muted)]">
+      <main className="flex min-h-screen items-center justify-center bg-[var(--bg-page)] text-sm text-[var(--text-muted)]">
         Loading product…
       </main>
     );
@@ -199,13 +224,13 @@ export default function ProductDetails({ productId }: { productId: string }) {
 
   if (!selectedProduct) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-5 text-center">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[var(--bg-page)] px-5 text-center text-[var(--text-primary)]">
         <p role="alert" className="text-sm text-rose-600 dark:text-rose-300">
           {error || 'This product could not be found.'}
         </p>
         <Link
           href="/"
-          className="rounded-full bg-[#16261e] px-5 py-3 text-sm font-semibold text-[#faf8f3]"
+          className="rounded-full bg-[#13231b] px-5 py-3 text-sm font-semibold text-[#fbf9f4] dark:bg-[#d8c39b] dark:text-[#101d17]"
         >
           Return to the store
         </Link>
@@ -215,7 +240,8 @@ export default function ProductDetails({ productId }: { productId: string }) {
 
   return (
     <div className="product-page-shell min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)]">
-      <header className="glass-nav sticky top-0 z-30 border-b backdrop-blur-xl backdrop-saturate-150">
+      {/* Header */}
+      <header className="glass-nav sticky top-0 z-30 border-b border-[var(--border-subtle)] backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-8">
           <Link href="/" className="group flex items-center gap-3" aria-label="Ittadi home">
             <BrandMark />
@@ -223,15 +249,16 @@ export default function ProductDetails({ productId }: { productId: string }) {
               <span className="brand-wordmark font-serif text-lg font-semibold tracking-[0.24em] sm:text-xl">
                 ITTADI
               </span>
-              <span className="text-[8px] font-semibold uppercase tracking-[0.3em] text-[#c9b07a]">
+              <span className="text-[8px] font-semibold uppercase tracking-[0.3em] text-[#c8ad74]">
                 Curated Living
               </span>
             </div>
           </Link>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-2.5">
             <Link
               href="/#products"
-              className="rounded-full border border-[var(--border-strong)] bg-[var(--bg-surface)] px-4 py-2 text-xs font-semibold transition hover:border-[#c9b07a]"
+              className="rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 py-2 text-xs font-semibold transition hover:border-[#c8ad74]"
             >
               Shop
             </Link>
@@ -249,56 +276,69 @@ export default function ProductDetails({ productId }: { productId: string }) {
         </Link>
 
         <div className="mt-6 grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
+          {/* Left Gallery Column */}
           <section aria-label="Product media" className="min-w-0">
-            <div
-              ref={galleryRef}
-              onScroll={(event) => {
-                const slideWidth = event.currentTarget.clientWidth;
-                if (slideWidth > 0) setActiveImage(Math.round(event.currentTarget.scrollLeft / slideWidth));
-              }}
-              className="snap-x snap-mandatory overflow-x-auto overscroll-x-contain rounded-3xl border border-[var(--border-subtle)] shadow-xl"
-              style={{ scrollbarWidth: 'none' }}
-            >
-              <div className="flex">
-                {selectedProduct.images.map((image, index) => (
-                  <img
-                    key={`${image}-${index}`}
-                    src={image}
-                    alt={`${selectedProduct.name} view ${index + 1}`}
-                    className="aspect-square w-full shrink-0 snap-center bg-[var(--bg-surface-soft)] object-cover"
-                  />
-                ))}
+            <div className="relative overflow-hidden rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-2 shadow-xl">
+              {discountPercent && (
+                <span className="absolute left-5 top-5 z-10 rounded-full bg-[#13231b] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#e5d2ac] dark:bg-[#d8c39b] dark:text-[#101d17]">
+                  Save {discountPercent}%
+                </span>
+              )}
+              <div
+                ref={galleryRef}
+                onScroll={(event) => {
+                  const slideWidth = event.currentTarget.clientWidth;
+                  if (slideWidth > 0) setActiveImage(Math.round(event.currentTarget.scrollLeft / slideWidth));
+                }}
+                className="snap-x snap-mandatory overflow-x-auto overscroll-x-contain rounded-2xl"
+                style={{ scrollbarWidth: 'none' }}
+              >
+                <div className="flex">
+                  {selectedProduct.images.map((image, index) => (
+                    <img
+                      key={`${image}-${index}`}
+                      src={image}
+                      alt={`${selectedProduct.name} view ${index + 1}`}
+                      className="aspect-square w-full shrink-0 snap-center bg-[var(--bg-surface-soft)] object-cover"
+                    />
+                  ))}
+                </div>
               </div>
             </div>
+
             {selectedProduct.images.length > 1 && (
               <>
-                <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
+                <div className="mt-3 flex gap-2.5 overflow-x-auto pb-2">
                   {selectedProduct.images.map((image, index) => (
                     <button
                       type="button"
                       key={`${image}-thumb-${index}`}
                       onClick={() => {
                         setActiveImage(index);
-                        galleryRef.current?.scrollTo({ left: galleryRef.current.clientWidth * index, behavior: 'smooth' });
+                        galleryRef.current?.scrollTo({
+                          left: galleryRef.current.clientWidth * index,
+                          behavior: 'smooth',
+                        });
                       }}
                       aria-label={`Show product image ${index + 1}`}
                       aria-pressed={activeImage === index}
                       className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition ${
                         activeImage === index
-                          ? 'border-[#c9b07a]'
-                          : 'border-transparent opacity-70 hover:opacity-100'
+                          ? 'border-[#c8ad74] shadow-sm'
+                          : 'border-transparent opacity-65 hover:opacity-100'
                       }`}
                     >
                       <img src={image} alt="" className="h-full w-full object-cover" />
                     </button>
                   ))}
                 </div>
+
                 <div className="mt-2 flex justify-end gap-2">
                   <button
                     type="button"
                     onClick={() => changeImage(-1)}
                     aria-label="Previous image"
-                    className="rounded-full border border-[var(--border-strong)] bg-[var(--bg-surface)] p-2 transition hover:border-[#c9b07a]"
+                    className="rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-2 transition hover:border-[#c8ad74]"
                   >
                     <ChevronLeft size={17} />
                   </button>
@@ -306,13 +346,14 @@ export default function ProductDetails({ productId }: { productId: string }) {
                     type="button"
                     onClick={() => changeImage(1)}
                     aria-label="Next image"
-                    className="rounded-full border border-[var(--border-strong)] bg-[var(--bg-surface)] p-2 transition hover:border-[#c9b07a]"
+                    className="rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-2 transition hover:border-[#c8ad74]"
                   >
                     <ChevronRight size={17} />
                   </button>
                 </div>
               </>
             )}
+
             {selectedProduct.videoUrl && (
               <div className="mt-5">
                 <ProductVideo url={selectedProduct.videoUrl} title={`${selectedProduct.name} product video`} />
@@ -320,12 +361,17 @@ export default function ProductDetails({ productId }: { productId: string }) {
             )}
           </section>
 
-          <section className="glass-panel h-fit rounded-3xl p-5 backdrop-blur-2xl backdrop-saturate-150 sm:p-8">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">
-              {selectedProduct.category}
-            </p>
-            <h1 className="mt-2 font-serif text-3xl sm:text-4xl">{selectedProduct.name}</h1>
-            <div className="mt-4 flex flex-wrap items-center gap-3">
+          {/* Right Product Info Panel */}
+          <section className="glass-panel h-fit rounded-3xl p-5 sm:p-8">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#c8ad74]/35 bg-[#c8ad74]/12 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#8c6e3b] dark:text-[#e5d2ac]">
+              <Sparkles size={11} /> {selectedProduct.category}
+            </span>
+
+            <h1 className="mt-3 font-serif text-3xl font-normal leading-tight sm:text-4xl">
+              {selectedProduct.name}
+            </h1>
+
+            <div className="mt-4 flex flex-wrap items-center gap-3 border-b border-[var(--border-subtle)] pb-5">
               <span className="text-2xl font-bold text-[#8c6e3b] dark:text-[#e5d2ac]">
                 ৳ {selectedProduct.price}
               </span>
@@ -334,7 +380,7 @@ export default function ProductDetails({ productId }: { productId: string }) {
                   ৳ {selectedProduct.oldPrice}
                 </span>
               )}
-              <span className="text-xs text-[var(--text-muted)]">
+              <span className="rounded-full bg-[var(--bg-surface-soft)] px-3 py-1 text-[11px] font-medium text-[var(--text-secondary)]">
                 {selectedProduct.isSample
                   ? 'Preview listing'
                   : selectedProduct.stock > 0
@@ -342,6 +388,7 @@ export default function ProductDetails({ productId }: { productId: string }) {
                     : 'Sold out'}
               </span>
             </div>
+
             <div className="mt-4 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
               <span className="flex" aria-label={`${reviewSummary.average.toFixed(1)} out of 5 stars`}>
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -350,18 +397,21 @@ export default function ProductDetails({ productId }: { productId: string }) {
                     size={15}
                     className={
                       star <= Math.round(reviewSummary.average)
-                        ? 'fill-[#c9b07a] text-[#c9b07a]'
-                        : 'text-[var(--text-muted)]/40'
+                        ? 'fill-[#c8ad74] text-[#c8ad74]'
+                        : 'text-[var(--text-muted)]/35'
                     }
                   />
                 ))}
               </span>
-              {reviewSummary.count
-                ? `${reviewSummary.average.toFixed(1)} · ${reviewSummary.count} customer reviews`
-                : 'No reviews yet'}
+              <span>
+                {reviewSummary.count
+                  ? `${reviewSummary.average.toFixed(1)} · ${reviewSummary.count} customer reviews`
+                  : 'No reviews yet'}
+              </span>
             </div>
+
             {selectedProduct.description && (
-              <p className="mt-6 whitespace-pre-wrap text-sm leading-7 text-[var(--text-secondary)]">
+              <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-[var(--text-secondary)]">
                 {selectedProduct.description}
               </p>
             )}
@@ -369,11 +419,11 @@ export default function ProductDetails({ productId }: { productId: string }) {
             {specificationLines.length > 0 && (
               <section className="mt-6 border-t border-[var(--border-subtle)] pt-5">
                 <h2 className="font-serif text-xl">Specifications</h2>
-                <ul className="mt-3 space-y-2 text-sm text-[var(--text-secondary)]">
+                <ul className="mt-3 space-y-2 text-xs leading-6 text-[var(--text-secondary)] sm:text-sm">
                   {specificationLines.map((line, index) => (
                     <li
                       key={`${line}-${index}`}
-                      className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface-soft)] px-3 py-2"
+                      className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface-soft)] px-3.5 py-2.5"
                     >
                       {line}
                     </li>
@@ -383,18 +433,18 @@ export default function ProductDetails({ productId }: { productId: string }) {
             )}
 
             {selectedProduct.isSample ? (
-              <p className="mt-6 rounded-xl bg-[var(--bg-surface-soft)] p-4 text-xs leading-5 text-[var(--text-secondary)]">
+              <p className="mt-6 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface-soft)] p-4 text-xs leading-5 text-[var(--text-secondary)]">
                 This is a preview listing, not yet linked to live stock. Publish it from the Admin panel before accepting orders.
               </p>
             ) : (
               <>
                 <div className="mt-7 flex flex-wrap items-center gap-3">
-                  <div className="flex items-center rounded-full border border-[var(--border-strong)]">
+                  <div className="flex items-center rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface-soft)]">
                     <button
                       type="button"
                       onClick={() => changeQuantity(-1)}
                       aria-label="Decrease quantity"
-                      className="p-3 transition hover:text-[#c9b07a]"
+                      className="p-3 transition hover:text-[#c8ad74]"
                     >
                       <Minus size={14} />
                     </button>
@@ -404,19 +454,21 @@ export default function ProductDetails({ productId }: { productId: string }) {
                       onClick={() => changeQuantity(1)}
                       aria-label="Increase quantity"
                       disabled={quantity >= Math.min(selectedProduct.stock, 20)}
-                      className="p-3 transition hover:text-[#c9b07a] disabled:opacity-40"
+                      className="p-3 transition hover:text-[#c8ad74] disabled:opacity-40"
                     >
                       <Plus size={14} />
                     </button>
                   </div>
+
                   <button
                     type="button"
                     disabled={selectedProduct.stock <= 0}
                     onClick={addToBag}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--border-strong)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] transition hover:border-[#c9b07a] disabled:opacity-40"
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] transition hover:border-[#c8ad74] disabled:opacity-40"
                   >
                     <ShoppingBag size={15} /> Add to bag
                   </button>
+
                   <button
                     type="button"
                     disabled={selectedProduct.stock <= 0}
@@ -431,11 +483,12 @@ export default function ProductDetails({ productId }: { productId: string }) {
                         },
                       ])
                     }
-                    className="flex-1 rounded-full bg-[#16261e] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[#faf8f3] transition hover:bg-[#243c30] disabled:opacity-40"
+                    className="flex-1 rounded-full bg-[#13231b] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[#fbf9f4] transition hover:bg-[#1f352a] disabled:opacity-40 dark:bg-[#d8c39b] dark:text-[#101d17] dark:hover:bg-[#ece0c8]"
                   >
                     Buy now
                   </button>
                 </div>
+
                 {notice && (
                   <p role="status" className="mt-3 text-xs font-semibold text-[#8c6e3b] dark:text-[#e5d2ac]">
                     {notice}
@@ -443,6 +496,7 @@ export default function ProductDetails({ productId }: { productId: string }) {
                 )}
               </>
             )}
+
             {error && (
               <p role="alert" className="mt-3 text-xs text-rose-600 dark:text-rose-300">
                 {error}
@@ -451,23 +505,26 @@ export default function ProductDetails({ productId }: { productId: string }) {
           </section>
         </div>
 
-        <section className="mt-12 border-t border-[var(--border-subtle)] pt-8">
+        {/* Ratings & Reviews */}
+        <section className="mt-14 border-t border-[var(--border-subtle)] pt-10">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">
+              <span className="section-eyebrow text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">
                 Real customer experiences
-              </p>
-              <h2 className="mt-1 font-serif text-2xl">Ratings &amp; reviews</h2>
+              </span>
+              <h2 className="mt-1.5 font-serif text-2xl sm:text-3xl">Ratings &amp; reviews</h2>
             </div>
             <p className="text-xs text-[var(--text-muted)]">{reviewSummary.count} verified review(s)</p>
           </div>
+
           {reviewError && (
             <p role="alert" className="mt-4 rounded-xl bg-rose-500/10 px-4 py-3 text-xs text-rose-600 dark:text-rose-300">
               {reviewError}
             </p>
           )}
+
           {!selectedProduct.isSample && (
-            <form onSubmit={submitReview} className="glass-panel mt-5 rounded-2xl p-4 backdrop-blur-2xl backdrop-saturate-150 sm:p-5">
+            <form onSubmit={submitReview} className="glass-panel mt-6 rounded-3xl p-5 sm:p-6">
               <label className="text-xs font-semibold text-[var(--text-secondary)]">Your rating</label>
               <div className="mt-2 flex gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -477,15 +534,20 @@ export default function ProductDetails({ productId }: { productId: string }) {
                     aria-label={`Rate ${star} star${star === 1 ? '' : 's'}`}
                     aria-pressed={reviewRating === star}
                     onClick={() => setReviewRating(star)}
-                    className="rounded p-1"
+                    className="rounded p-1 transition hover:scale-105"
                   >
                     <Star
                       size={19}
-                      className={star <= reviewRating ? 'fill-[#c9b07a] text-[#c9b07a]' : 'text-[var(--text-muted)]/40'}
+                      className={
+                        star <= reviewRating
+                          ? 'fill-[#c8ad74] text-[#c8ad74]'
+                          : 'text-[var(--text-muted)]/35'
+                      }
                     />
                   </button>
                 ))}
               </div>
+
               <textarea
                 required
                 minLength={3}
@@ -493,31 +555,36 @@ export default function ProductDetails({ productId }: { productId: string }) {
                 value={reviewComment}
                 onChange={(event) => setReviewComment(event.target.value)}
                 rows={3}
-                className="mt-3 w-full resize-y rounded-xl border border-[var(--border-strong)] bg-[var(--bg-surface-soft)] px-3 py-2.5 text-xs outline-none focus:border-[#c9b07a]"
+                className="mt-3 w-full resize-y rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-page)] px-3.5 py-2.5 text-xs text-[var(--text-primary)] outline-none transition focus:border-[#c8ad74] sm:text-sm"
                 placeholder="Share your experience (after delivery)"
               />
-              <div className="mt-3 flex items-center gap-3">
+
+              <div className="mt-4 flex flex-wrap items-center gap-4">
                 <button
                   type="submit"
                   disabled={reviewSubmitting}
-                  className="rounded-full bg-[#16261e] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-[#faf8f3] transition hover:bg-[#243c30] disabled:opacity-50"
+                  className="rounded-full bg-[#13231b] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.14em] text-[#fbf9f4] transition hover:bg-[#1f352a] disabled:opacity-50 dark:bg-[#d8c39b] dark:text-[#101d17]"
                 >
                   {reviewSubmitting ? 'Submitting…' : 'Submit verified review'}
                 </button>
-                <Link href="/account" className="text-[10px] font-semibold underline">
-                  Sign in
+                <Link
+                  href="/account"
+                  className="text-xs font-semibold text-[var(--text-secondary)] underline underline-offset-4 hover:text-[var(--text-primary)]"
+                >
+                  Sign in to account
                 </Link>
               </div>
             </form>
           )}
-          <div className="mt-5 grid gap-3 md:grid-cols-2">
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
             {reviews.length === 0 && !reviewError && (
-              <p className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4 text-xs text-[var(--text-secondary)]">
+              <p className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4 text-xs text-[var(--text-secondary)]">
                 Be the first to share feedback after your order is delivered.
               </p>
             )}
             {reviews.map((review) => (
-              <article key={review._id} className="glass-panel rounded-2xl p-4 backdrop-blur-2xl backdrop-saturate-150">
+              <article key={review._id} className="glass-panel rounded-2xl p-4 sm:p-5">
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-xs font-bold">{review.customerName}</p>
                   <span className="flex shrink-0" aria-label={`${review.rating} out of 5 stars`}>
@@ -525,15 +592,19 @@ export default function ProductDetails({ productId }: { productId: string }) {
                       <Star
                         key={star}
                         size={12}
-                        className={star <= review.rating ? 'fill-[#c9b07a] text-[#c9b07a]' : 'text-[var(--text-muted)]/40'}
+                        className={
+                          star <= review.rating
+                            ? 'fill-[#c8ad74] text-[#c8ad74]'
+                            : 'text-[var(--text-muted)]/35'
+                        }
                       />
                     ))}
                   </span>
                 </div>
-                <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-[var(--text-secondary)]">
+                <p className="mt-2 whitespace-pre-wrap text-xs leading-6 text-[var(--text-secondary)]">
                   {review.comment}
                 </p>
-                <p className="mt-2 text-[9px] text-[var(--text-muted)]">
+                <p className="mt-2 text-[10px] text-[var(--text-muted)]">
                   Verified purchase · {new Date(review.createdAt).toLocaleDateString()}
                 </p>
               </article>
@@ -541,26 +612,29 @@ export default function ProductDetails({ productId }: { productId: string }) {
           </div>
         </section>
 
+        {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <section className="mt-14 border-t border-[var(--border-subtle)] pt-8">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">
+          <section className="mt-14 border-t border-[var(--border-subtle)] pt-10">
+            <span className="section-eyebrow text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-muted)]">
               Selected for you
-            </p>
-            <h2 className="mt-1 font-serif text-2xl">You may also like</h2>
-            <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            </span>
+            <h2 className="mt-1.5 font-serif text-2xl sm:text-3xl">You may also like</h2>
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {relatedProducts.slice(0, 4).map((related) => (
                 <Link
                   key={related._id}
                   href={`/product/${related._id}`}
-                  className="premium-card overflow-hidden backdrop-blur-xl backdrop-saturate-150"
+                  className="premium-card overflow-hidden"
                 >
-                  <img
-                    src={related.image}
-                    alt={related.name}
-                    className="aspect-square w-full object-cover transition duration-500 hover:scale-[1.03]"
-                  />
-                  <div className="p-3">
-                    <p className="line-clamp-2 text-xs font-semibold">{related.name}</p>
+                  <div className="product-image-frame aspect-square w-full overflow-hidden">
+                    <img
+                      src={related.image}
+                      alt={related.name}
+                      className="h-full w-full object-cover transition duration-500 hover:scale-[1.03]"
+                    />
+                  </div>
+                  <div className="p-3.5">
+                    <p className="line-clamp-2 font-serif text-sm font-medium">{related.name}</p>
                     <p className="mt-2 text-xs font-bold text-[#8c6e3b] dark:text-[#e5d2ac]">
                       ৳ {related.price}
                     </p>
@@ -592,7 +666,7 @@ export default function ProductDetails({ productId }: { productId: string }) {
 
 function BrandMark() {
   return (
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#c9b07a]/55 bg-[#122019] text-[#e5d2ac] shadow-[0_4px_14px_rgba(0,0,0,0.22)] transition-transform duration-300 group-hover:scale-105 sm:h-10 sm:w-10">
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#c8ad74]/55 bg-[#122019] text-[#e5d2ac] shadow-[0_4px_14px_rgba(0,0,0,0.22)] transition-transform duration-300 group-hover:scale-105 sm:h-10 sm:w-10">
       <svg aria-hidden="true" viewBox="0 0 32 32" className="h-5 w-5" fill="none">
         <circle cx="16" cy="16" r="12.5" stroke="currentColor" strokeWidth="1.2" opacity="0.45" />
         <path
@@ -619,7 +693,8 @@ function ProductVideo({ url, title }: { url: string; title: string }) {
       : parsedUrl.hostname.endsWith('youtube.com')
         ? parsedUrl.searchParams.get('v') || parsedUrl.pathname.match(/\/(?:shorts|embed)\/([^/]+)/)?.[1]
         : '';
-  const vimeoId = parsedUrl.hostname === 'vimeo.com' ? parsedUrl.pathname.split('/').filter(Boolean).at(-1) : '';
+  const vimeoId =
+    parsedUrl.hostname === 'vimeo.com' ? parsedUrl.pathname.split('/').filter(Boolean).at(-1) : '';
   if (youtubeId) {
     return (
       <iframe
@@ -643,14 +718,22 @@ function ProductVideo({ url, title }: { url: string; title: string }) {
     );
   }
   if (/\.(mp4|webm|ogg|mov|m4v)$/i.test(parsedUrl.pathname)) {
-    return <video title={title} src={url} controls preload="metadata" className="aspect-video w-full rounded-2xl bg-black" />;
+    return (
+      <video
+        title={title}
+        src={url}
+        controls
+        preload="metadata"
+        className="aspect-video w-full rounded-2xl bg-black"
+      />
+    );
   }
   return (
     <a
       href={url}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex items-center rounded-full border border-[var(--border-strong)] px-4 py-2 text-xs font-semibold"
+      className="inline-flex items-center rounded-full border border-[var(--border-subtle)] px-4 py-2 text-xs font-semibold"
     >
       Open product video
     </a>

@@ -45,10 +45,10 @@ export default function ThemeToggle() {
       onClick={toggleTheme}
       aria-label="Toggle dark and light mode"
       title="Toggle dark and light mode"
-      className="theme-toggle inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border-strong)] bg-[var(--bg-surface)] text-[#8c6e3b] shadow-sm transition hover:-translate-y-0.5 hover:border-[#c9b07a] hover:shadow-md dark:text-[#e5d2ac] sm:h-10 sm:w-10"
+      className="theme-toggle glass-control inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#c8ad74]/35 bg-[var(--bg-surface)] text-[#8c6e3b] shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[#c8ad74] hover:shadow-md dark:text-[#e5d2ac] sm:h-10 sm:w-10"
     >
-      <Moon size={16} aria-hidden="true" className="theme-icon-light" />
-      <Sun size={16} aria-hidden="true" className="theme-icon-dark" />
+      <Moon size={16} aria-hidden="true" className="theme-icon-light transition-transform duration-200" />
+      <Sun size={16} aria-hidden="true" className="theme-icon-dark transition-transform duration-200" />
     </button>
   );
 }
