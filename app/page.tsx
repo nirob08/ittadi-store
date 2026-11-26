@@ -205,6 +205,17 @@ export default function Home() {
     [displayProducts],
   );
 
+  const categoryCards = useMemo(() => {
+    return availableCategories.map((catName) => {
+      const matchingItems = displayProducts.filter((item) => item.category === catName);
+      return {
+        name: catName,
+        count: matchingItems.length,
+        image: matchingItems[0]?.image || displayProducts[0]?.image || '/favicon.png',
+      };
+    });
+  }, [availableCategories, displayProducts]);
+
   const featuredLead = displayProducts[0];
   const cartItems = products.filter((product) => cart[product._id]);
   const cartCount = Object.values(cart).reduce((total, quantity) => total + quantity, 0);
@@ -292,19 +303,24 @@ export default function Home() {
     }
   };
 
+  const getDiscountPercent = (product: Product) => {
+    if (!product.oldPrice || product.oldPrice <= product.price) return null;
+    return Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100);
+  };
+
   return (
     <div className="storefront-shell min-h-screen w-full overflow-x-hidden bg-[#faf9f6] text-[#24352c] selection:bg-[#24352c] selection:text-[#faf9f6]">
-      {/* Top Editorial Bar */}
-      <div className="announcement-bar flex w-full flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-[#18241d] px-4 py-2.5 text-[10px] font-medium uppercase tracking-[0.2em] text-[#e6dfd1] sm:px-8 lg:px-14">
+      {/* Top Concierge Bar */}
+      <div className="announcement-bar flex w-full flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-[#18241d] px-4 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-[#e6dfd1] sm:px-8 lg:px-14">
         <a
-          className="transition hover:text-white"
+          className="truncate transition hover:text-white"
           href="https://wa.me/880153410524?text=Assalamu%20alaikum%2C%20I%20would%20like%20to%20place%20an%20order."
           target="_blank"
           rel="noreferrer"
         >
           Concierge &amp; WhatsApp · +880 1534-10524
         </a>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <span className="hidden text-white/60 sm:inline">Nationwide Dispatch</span>
           <a
             aria-label="Ittadi on Facebook"
@@ -327,9 +343,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Sticky Minimalist Header */}
-      <header className="glass-nav sticky top-0 z-30 border-b border-[#e8e3d8]/90 bg-[#faf9f6]/90 backdrop-blur-xl backdrop-saturate-150">
-        <div className="flex w-full flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-8 lg:flex-nowrap lg:px-14 lg:py-4">
+      {/* Sticky Header */}
+      <header className="glass-nav sticky top-0 z-30 border-b border-[#e8e3d8]/90 bg-[#faf9f6]/92 backdrop-blur-xl backdrop-saturate-150">
+        <div className="flex w-full flex-wrap items-center justify-between gap-2.5 px-4 py-3 sm:px-8 lg:flex-nowrap lg:px-14 lg:py-4">
+          {/* Brand Logo (Double-click/tap or Enter opens Admin Sign-in) */}
           <button
             type="button"
             onClick={() => {
@@ -347,7 +364,7 @@ export default function Home() {
                 void openAdmin();
               }
             }}
-            className="group flex shrink-0 items-center gap-3 rounded-full py-1 text-left"
+            className="group flex shrink-0 items-center gap-2.5 rounded-full py-0.5 text-left"
             title="Double-click or double-tap for admin"
             aria-label="Ittadi home. Double-click, double-tap, or press Enter for admin login."
           >
@@ -358,35 +375,40 @@ export default function Home() {
               className="h-9 w-9 rounded-full border border-[#dfd9cc] object-cover transition-transform duration-300 group-hover:scale-105 sm:h-10 sm:w-10"
             />
             <div className="flex flex-col">
-              <span className="brand-wordmark font-serif text-lg font-semibold tracking-[0.22em] text-[#24352c] sm:text-xl">
+              <span className="brand-wordmark font-serif text-base font-semibold tracking-[0.2em] text-[#24352c] sm:text-xl">
                 ITTADI
               </span>
-              <span className="text-[8px] font-semibold uppercase tracking-[0.28em] text-[#7c8875]">
+              <span className="hidden text-[8px] font-semibold uppercase tracking-[0.28em] text-[#7c8875] sm:block">
                 Edition No. 01
               </span>
             </div>
           </button>
 
+          {/* Desktop Navigation */}
           <nav
             aria-label="Main navigation"
-            className="main-nav-links order-3 flex w-full items-center justify-center gap-6 border-t border-[#ece7dc] pt-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#536258] sm:gap-8 lg:order-none lg:w-auto lg:justify-start lg:border-t-0 lg:pt-0"
+            className="main-nav-links hidden items-center gap-7 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#536258] lg:flex"
           >
             <a href="#" className="text-[#24352c] underline decoration-[#b79d72] underline-offset-8">
               Edition
             </a>
+            <a href="#categories" className="transition hover:text-[#24352c]">
+              Categories
+            </a>
             <a href="#products" className="transition hover:text-[#24352c]">
-              Objects
+              Collection
             </a>
             <a href="#about" className="transition hover:text-[#24352c]">
               Philosophy
             </a>
             <a href="#contact" className="transition hover:text-[#24352c]">
-              Atelier
+              Contact
             </a>
           </nav>
 
-          <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-2.5 lg:flex-none">
-            <label className="glass-control flex min-w-0 max-w-[230px] flex-1 items-center gap-2 rounded-full border border-[#e3ddd0] bg-white/95 px-3.5 py-2 text-[#7c8875] transition focus-within:border-[#24352c] sm:max-w-[260px] lg:w-64">
+          {/* Utility Controls */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            <label className="glass-control hidden items-center gap-2 rounded-full border border-[#e3ddd0] bg-white px-4 py-2 text-[#7c8875] transition focus-within:border-[#24352c] lg:flex lg:w-60">
               <Search size={15} aria-hidden="true" className="shrink-0" />
               <input
                 type="search"
@@ -403,7 +425,7 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Open customer account"
-              className="glass-control flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full border border-[#e3ddd0] bg-white/95 px-3 text-[#24352c] transition hover:border-[#24352c] sm:h-10 sm:px-4"
+              className="glass-control flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full border border-[#e3ddd0] bg-white px-2.5 text-[#24352c] transition hover:border-[#24352c] sm:h-10 sm:px-4"
             >
               <CircleUserRound size={16} />
               <span className="hidden text-[11px] font-semibold uppercase tracking-[0.14em] sm:inline">
@@ -416,45 +438,117 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setCartOpen(true)}
-              className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#24352c] text-[#faf9f6] transition hover:bg-[#344b3f] sm:h-10 sm:w-10"
+              className="relative flex h-9 items-center justify-center gap-1.5 rounded-full bg-[#24352c] px-3 text-[#faf9f6] transition hover:bg-[#344b3f] sm:h-10 sm:px-4"
               aria-label={`Open shopping bag, ${cartCount} items`}
             >
-              <ShoppingBag size={16} />
-              {cartCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#c69f63] px-1 text-[9px] font-bold text-[#18241d]">
-                  {cartCount}
-                </span>
-              )}
+              <ShoppingBag size={15} />
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em]">
+                Bag{cartCount > 0 ? ` (${cartCount})` : ''}
+              </span>
             </button>
+          </div>
+
+          {/* Mobile Search Bar */}
+          <div className="w-full pt-1 lg:hidden">
+            <label className="glass-control flex w-full items-center gap-2.5 rounded-xl border border-[#e3ddd0] bg-white px-3.5 py-2 text-[#7c8875] shadow-[0_2px_10px_rgba(36,53,44,0.03)] transition focus-within:border-[#24352c]">
+              <Search size={15} aria-hidden="true" className="shrink-0 text-[#6e7969]" />
+              <input
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search aesthetic lights, planters, decor..."
+                aria-label="Search products"
+                className="min-w-0 flex-1 bg-transparent text-xs text-[#24352c] outline-none placeholder:text-[#989d92]"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  aria-label="Clear search"
+                  className="rounded-full p-0.5 text-[#7c8875] hover:text-[#24352c]"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </label>
           </div>
         </div>
       </header>
 
       <main>
-        {/* Editorial Hero Section inspired by Avenor Edition */}
+        {/* Hero Section */}
         <section className="hero-stage relative isolate overflow-hidden border-b border-[#e5dfd2] bg-[#f4f1ea] text-[#24352c]">
           <div className="hero-glow hero-glow-a" />
           <div className="hero-glow hero-glow-b" />
           <div className="hero-grid-pattern opacity-40" />
 
-          <div className="relative z-10 grid min-h-[580px] w-full items-center gap-12 px-5 py-14 sm:px-10 lg:min-h-[680px] lg:grid-cols-[1.12fr_0.88fr] lg:gap-16 lg:px-14 lg:py-20">
-            {/* Left Editorial Typography */}
-            <div className="max-w-2xl">
+          <div className="relative z-10 grid w-full items-center gap-8 px-4 py-5 sm:gap-12 sm:px-10 sm:py-14 lg:min-h-[660px] lg:grid-cols-[1.12fr_0.88fr] lg:gap-16 lg:px-14 lg:py-20">
+            {/* Mobile Compact Editorial Banner */}
+            <div className="relative overflow-hidden rounded-3xl border border-[#dfd8c8] bg-[#1e2d25] text-white shadow-[0_18px_45px_-18px_rgba(24,36,29,0.35)] lg:hidden">
+              <div className="grid grid-cols-[1.15fr_0.85fr] items-center">
+                <div className="p-5 sm:p-7">
+                  <span className="inline-block rounded-full bg-white/12 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-[#e5d2ac]">
+                    Ittadi Edition
+                  </span>
+                  <h1 className="hero-title mt-3 font-serif text-2xl font-normal leading-tight text-white sm:text-4xl">
+                    Timeless objects,
+                    <span className="block italic text-[#e5d2ac]">crafted for living.</span>
+                  </h1>
+                  <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-white/75 sm:text-xs">
+                    Warm lighting, refined accents, and thoughtful everyday pieces.
+                  </p>
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <a
+                      href="#products"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#e5d2ac] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#18241d] transition hover:bg-white"
+                    >
+                      Shop Now <ArrowRight size={12} />
+                    </a>
+                    <a
+                      href="https://wa.me/880153410524?text=Assalamu%20alaikum%2C%20I%20would%20like%20to%20place%20an%20order."
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 rounded-full border border-white/25 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/90 transition hover:bg-white/10"
+                    >
+                      WhatsApp
+                    </a>
+                  </div>
+                </div>
+
+                <div className="relative h-full min-h-[196px] overflow-hidden bg-[#2b3e33] sm:min-h-[240px]">
+                  {featuredLead?.image ? (
+                    <img
+                      src={featuredLead.image}
+                      alt={featuredLead.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center p-4 text-center font-serif italic text-lg text-[#e5d2ac]">
+                      Curated Living
+                    </div>
+                  )}
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#1e2d25]/45 via-transparent to-transparent" />
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Editorial Typography */}
+            <div className="hidden max-w-2xl lg:block">
               <div className="inline-flex items-center gap-2.5 border-b border-[#c9bea8] pb-2 text-[10px] font-bold uppercase tracking-[0.28em] text-[#6d7965]">
                 <Sparkles size={13} className="text-[#9e7d47]" />
                 <span>Curated Objects for Quiet Spaces</span>
               </div>
 
-              <h1 className="hero-title mt-7 font-serif text-5xl font-normal leading-[1.04] tracking-tight text-[#1e2d25] sm:text-6xl lg:text-[4.6rem]">
+              <h1 className="hero-title mt-7 font-serif text-6xl font-normal leading-[1.04] tracking-tight text-[#1e2d25] xl:text-[4.6rem]">
                 Timeless objects,
                 <span className="mt-1.5 block italic text-[#5c6d5c]">crafted for living.</span>
               </h1>
 
-              <p className="hero-copy mt-6 max-w-lg text-sm leading-7 text-[#58655c] sm:text-base">
+              <p className="hero-copy mt-6 max-w-lg text-base leading-7 text-[#58655c]">
                 An edited selection of warm ambient lighting, sculptural decor, and everyday tactile pieces chosen to bring calm character into your home.
               </p>
 
-              <div className="mt-9 flex flex-col gap-3.5 sm:flex-row sm:items-center">
+              <div className="mt-9 flex flex-row items-center gap-3.5">
                 <a
                   href="#products"
                   className="hero-primary-cta inline-flex items-center justify-center gap-2.5 rounded-full bg-[#24352c] px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#faf9f6] transition hover:bg-[#33493e]"
@@ -480,9 +574,9 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right Framed Editorial Lookbook Showcase */}
-            <div className="hero-showcase relative mx-auto w-full max-w-md lg:max-w-lg">
-              <div className="rounded-[2rem] border border-[#dfd8c8] bg-white/85 p-3.5 shadow-[0_24px_70px_-25px_rgba(36,53,44,0.18)] backdrop-blur-xl sm:p-4">
+            {/* Desktop Featured Showcase Card */}
+            <div className="hero-showcase relative mx-auto hidden w-full max-w-lg lg:block">
+              <div className="rounded-[2rem] border border-[#dfd8c8] bg-white/85 p-4 shadow-[0_24px_70px_-25px_rgba(36,53,44,0.18)] backdrop-blur-xl">
                 <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[1.5rem] bg-[#eae5da]">
                   {featuredLead?.image ? (
                     <img
@@ -532,40 +626,101 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Quiet Promise Strip */}
-        <section id="about" className="feature-strip-shell border-b border-[#e8e3d8] bg-[#faf9f6] px-5 py-8 sm:px-10 lg:px-14">
+        {/* Category Showcase Grid */}
+        <section id="categories" className="w-full border-b border-[#e8e3d8] bg-[#faf9f6] px-4 py-6 sm:px-10 sm:py-10 lg:px-14">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <span className="text-[9px] font-bold uppercase tracking-[0.24em] text-[#7c8875] sm:text-[10px]">
+                Browse By Edit
+              </span>
+              <h2 className="mt-0.5 font-serif text-xl font-normal text-[#1e2d25] sm:text-2xl">
+                Featured Categories
+              </h2>
+            </div>
+            {category !== 'All' && (
+              <button
+                type="button"
+                onClick={() => setCategory('All')}
+                className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#315b45] underline underline-offset-4"
+              >
+                Reset ({category})
+              </button>
+            )}
+          </div>
+
+          <div className="mt-4 grid grid-cols-4 gap-2.5 sm:grid-cols-5 sm:gap-4">
+            {categoryCards.slice(0, 5).map((cat) => {
+              const active = category === cat.name;
+              return (
+                <button
+                  key={cat.name}
+                  type="button"
+                  onClick={() => setCategory(active ? 'All' : cat.name)}
+                  aria-pressed={active}
+                  className={`group flex flex-col items-center rounded-2xl border p-2 text-center transition sm:p-3 ${
+                    active
+                      ? 'border-[#24352c] bg-[#24352c] text-white shadow-md'
+                      : 'border-[#e6e1d5] bg-white text-[#24352c] hover:border-[#b79d72]'
+                  }`}
+                >
+                  <div className="aspect-square w-full overflow-hidden rounded-xl bg-[#f2efe8]">
+                    <img
+                      src={cat.image}
+                      alt={cat.name}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <span className="mt-2 line-clamp-1 text-[10px] font-semibold tracking-tight sm:text-xs">
+                    {cat.name}
+                  </span>
+                  <span
+                    className={`mt-0.5 text-[9px] ${
+                      active ? 'text-[#e5d2ac]' : 'text-[#7c8875]'
+                    }`}
+                  >
+                    {cat.count} {cat.count === 1 ? 'item' : 'items'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Promise Strip */}
+        <section id="about" className="feature-strip-shell border-b border-[#e8e3d8] bg-[#faf9f6] px-4 py-6 sm:px-10 sm:py-8 lg:px-14">
           <div className="feature-strip grid w-full grid-cols-1 divide-y divide-[#e8e3d8] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-            <div className="flex items-start gap-4 py-4 sm:px-6 sm:py-2 first:sm:pl-0">
-              <Truck className="mt-0.5 shrink-0 text-[#4b6755]" size={20} strokeWidth={1.7} />
+            <div className="flex items-start gap-3.5 py-3 sm:px-6 sm:py-2 first:sm:pl-0">
+              <Truck className="mt-0.5 shrink-0 text-[#4b6755]" size={19} strokeWidth={1.7} />
               <div>
-                <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-[#24352c]">
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#24352c]">
                   Nationwide Delivery
                 </h2>
-                <p className="mt-1 text-xs leading-5 text-[#667269]">
+                <p className="mt-0.5 text-[11px] leading-5 text-[#667269] sm:text-xs">
                   Carefully packed and dispatched across Bangladesh.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 py-4 sm:px-6 sm:py-2">
-              <ShieldCheck className="mt-0.5 shrink-0 text-[#4b6755]" size={20} strokeWidth={1.7} />
+            <div className="flex items-start gap-3.5 py-3 sm:px-6 sm:py-2">
+              <ShieldCheck className="mt-0.5 shrink-0 text-[#4b6755]" size={19} strokeWidth={1.7} />
               <div>
-                <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-[#24352c]">
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#24352c]">
                   Considered Selection
                 </h2>
-                <p className="mt-1 text-xs leading-5 text-[#667269]">
+                <p className="mt-0.5 text-[11px] leading-5 text-[#667269] sm:text-xs">
                   Checked for finish, warmth, and everyday utility.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 py-4 sm:px-6 sm:py-2 last:sm:pr-0">
-              <Headphones className="mt-0.5 shrink-0 text-[#4b6755]" size={20} strokeWidth={1.7} />
+            <div className="flex items-start gap-3.5 py-3 sm:px-6 sm:py-2 last:sm:pr-0">
+              <Headphones className="mt-0.5 shrink-0 text-[#4b6755]" size={19} strokeWidth={1.7} />
               <div>
-                <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-[#24352c]">
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#24352c]">
                   Personal Support
                 </h2>
-                <p className="mt-1 text-xs leading-5 text-[#667269]">
+                <p className="mt-0.5 text-[11px] leading-5 text-[#667269] sm:text-xs">
                   Direct assistance for orders, gifting, and tracking.
                 </p>
               </div>
@@ -573,14 +728,14 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Collection & Filterable Grid */}
-        <section id="products" className="collection-section w-full px-5 py-16 sm:px-10 sm:py-24 lg:px-14">
-          <div className="flex flex-col justify-between gap-6 border-b border-[#e6e1d5] pb-8 md:flex-row md:items-end">
+        {/* Product Collection */}
+        <section id="products" className="collection-section w-full px-4 py-10 sm:px-10 sm:py-20 lg:px-14">
+          <div className="flex flex-col justify-between gap-4 border-b border-[#e6e1d5] pb-6 md:flex-row md:items-end">
             <div>
               <span className="section-eyebrow text-[10px] font-bold uppercase tracking-[0.26em] text-[#7c8875]">
                 The Catalog
               </span>
-              <h2 className="mt-2.5 font-serif text-4xl font-normal text-[#1e2d25] sm:text-5xl">
+              <h2 className="mt-2 font-serif text-3xl font-normal text-[#1e2d25] sm:text-5xl">
                 Curated Collection
               </h2>
             </div>
@@ -589,15 +744,15 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Category Filter Pills */}
-          <div className="mt-7 flex gap-2 overflow-x-auto pb-2">
+          {/* Filter Pills */}
+          <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
             {['All', ...availableCategories].map((item) => (
               <button
                 type="button"
                 key={item}
                 onClick={() => setCategory(item)}
                 aria-pressed={category === item}
-                className={`category-pill shrink-0 rounded-full border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] transition ${
+                className={`category-pill shrink-0 rounded-full border px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] transition sm:px-4 sm:py-2 sm:text-[11px] ${
                   category === item
                     ? 'border-[#24352c] bg-[#24352c] text-[#faf9f6]'
                     : 'border-[#e2dcd0] bg-white text-[#57645a] hover:border-[#24352c] hover:text-[#24352c]'
@@ -609,33 +764,33 @@ export default function Home() {
           </div>
 
           {productError && (
-            <p role="alert" className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <p role="alert" className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-700 sm:text-sm">
               {productError} Sample products are shown below for preview only.
             </p>
           )}
 
           {!loading && products.length === 0 && !productError && (
-            <p className="mt-6 rounded-2xl border border-[#e6e1d5] bg-white px-4 py-3 text-xs text-[#5d6960] sm:text-sm">
+            <p className="mt-5 rounded-2xl border border-[#e6e1d5] bg-white px-4 py-3 text-xs text-[#5d6960] sm:text-sm">
               Preview listings are shown below. Publish the sample catalog from the admin panel to make them available for checkout.
             </p>
           )}
 
           {loading ? (
-            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 lg:gap-6">
+            <div className="mt-6 grid grid-cols-1 gap-3.5 sm:mt-10 sm:grid-cols-3 lg:grid-cols-4 lg:gap-6">
               {[1, 2, 3, 4].map((item) => (
                 <div
                   key={item}
-                  className="premium-card aspect-[4/5] animate-pulse rounded-2xl border border-[#e8e3d8] bg-[#efece4]"
+                  className="premium-card h-32 animate-pulse rounded-2xl border border-[#e8e3d8] bg-[#efece4] sm:aspect-[4/5] sm:h-auto"
                 />
               ))}
             </div>
           ) : visibleProducts.length === 0 ? (
-            <div className="mt-10 rounded-3xl border border-dashed border-[#d8d2c5] bg-white px-6 py-16 text-center">
-              <ShoppingBag className="mx-auto text-[#7c8875]" size={28} />
-              <p className="mt-4 font-serif text-2xl text-[#24352c]">
+            <div className="mt-8 rounded-3xl border border-dashed border-[#d8d2c5] bg-white px-6 py-14 text-center">
+              <ShoppingBag className="mx-auto text-[#7c8875]" size={26} />
+              <p className="mt-3 font-serif text-2xl text-[#24352c]">
                 {displayProducts.length === 0 ? 'Our shelves are getting ready.' : 'No matching objects found.'}
               </p>
-              <p className="mt-2 text-xs text-[#667269] sm:text-sm">
+              <p className="mt-1.5 text-xs text-[#667269] sm:text-sm">
                 {displayProducts.length === 0
                   ? 'Please check back soon for our first collection.'
                   : 'Try clearing your search or switching categories.'}
@@ -644,118 +799,197 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setCategory('All')}
-                  className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-[#24352c] underline underline-offset-4"
+                  className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-[#24352c] underline underline-offset-4"
                 >
                   Show all objects
                 </button>
               )}
             </div>
           ) : (
-            <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 lg:gap-x-7 lg:gap-y-10">
-              {visibleProducts.map((product) => (
-                <article
-                  key={product._id}
-                  className="premium-card product-card group flex min-w-0 flex-col justify-between rounded-2xl border border-[#eae5da] bg-white p-2.5 transition hover:border-[#cfc7b7] sm:p-3.5"
-                >
-                  <div>
-                    <div className="product-image-frame relative aspect-[4/5] overflow-hidden rounded-xl bg-[#f2efe8]">
-                      {product.badge && (
-                        <span className="product-badge absolute left-2.5 top-2.5 z-10 rounded-full border border-[#e4ddd0] bg-[#faf9f6]/95 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-[#24352c]">
-                          {product.badge}
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => openProduct(product)}
-                        aria-label={`View ${product.name} details`}
-                        className="h-full w-full text-left"
-                      >
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          loading="lazy"
-                          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
-                        />
-                      </button>
-                      {product.stock <= 0 && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-[#18241d]/50 backdrop-blur-[2px]">
-                          <span className="rounded-full bg-[#faf9f6] px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#24352c]">
-                            Sold Out
+            <div className="mt-6 grid grid-cols-1 gap-3.5 sm:mt-10 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4 lg:gap-7">
+              {visibleProducts.map((product) => {
+                const discountPercent = getDiscountPercent(product);
+                return (
+                  <article
+                    key={product._id}
+                    className="premium-card product-card group flex min-w-0 flex-row items-center gap-3.5 rounded-2xl border border-[#eae5da] bg-white p-2.5 transition hover:border-[#cfc7b7] sm:flex-col sm:items-stretch sm:justify-between sm:gap-0 sm:p-3.5"
+                  >
+                    <div>
+                      <div className="product-image-frame relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-[#f2efe8] sm:aspect-[4/5] sm:h-auto sm:w-full">
+                        {product.badge && (
+                          <span className="product-badge hidden rounded-full border border-[#e4ddd0] bg-[#faf9f6]/95 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-[#24352c] sm:absolute sm:left-2.5 sm:top-2.5 sm:z-10 sm:inline-block">
+                            {product.badge}
                           </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="product-card-info px-1 pt-4">
-                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#838e7c]">
-                        {product.category}
-                      </p>
-                      <h3 className="mt-1.5 line-clamp-2 min-h-10 font-serif text-base font-medium leading-snug text-[#1e2d25] sm:text-lg">
+                        )}
+                        {discountPercent && (
+                          <span className="hidden rounded-full bg-[#24352c] px-2 py-0.5 text-[9px] font-bold text-[#e5d2ac] sm:absolute sm:right-2.5 sm:top-2.5 sm:z-10 sm:inline-block">
+                            -{discountPercent}%
+                          </span>
+                        )}
                         <button
                           type="button"
                           onClick={() => openProduct(product)}
-                          className="text-left transition hover:text-[#4b6755]"
+                          aria-label={`View ${product.name} details`}
+                          className="h-full w-full text-left"
                         >
-                          {product.name}
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            loading="lazy"
+                            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                          />
                         </button>
-                      </h3>
-
-                      <button
-                        type="button"
-                        onClick={() => openProduct(product)}
-                        className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-medium text-[#6c786e] hover:text-[#24352c] hover:underline"
-                      >
-                        {product.reviewCount ? (
-                          <>
-                            <Star size={11} className="fill-[#c69f63] text-[#c69f63]" />
-                            {product.ratingAverage?.toFixed(1)} ({product.reviewCount})
-                          </>
-                        ) : (
-                          <>View details</>
+                        {product.stock <= 0 && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-[#18241d]/55 backdrop-blur-[1px]">
+                            <span className="rounded-full bg-[#faf9f6] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[#24352c] sm:px-4 sm:py-1.5 sm:text-[10px]">
+                              Sold Out
+                            </span>
+                          </div>
                         )}
-                      </button>
+                      </div>
 
-                      <div className="mt-3 flex items-baseline gap-2">
-                        <span className="text-sm font-bold text-[#24352c] sm:text-base">
-                          ৳ {product.price}
-                        </span>
-                        {product.oldPrice && product.oldPrice > product.price && (
-                          <span className="text-xs text-[#9b9f96] line-through">
-                            ৳ {product.oldPrice}
+                      <div className="product-card-info hidden sm:block sm:px-1 sm:pt-4">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#838e7c]">
+                          {product.category}
+                        </p>
+                        <h3 className="mt-1.5 line-clamp-2 min-h-10 font-serif text-lg font-medium leading-snug text-[#1e2d25]">
+                          <button
+                            type="button"
+                            onClick={() => openProduct(product)}
+                            className="text-left transition hover:text-[#4b6755]"
+                          >
+                            {product.name}
+                          </button>
+                        </h3>
+
+                        <button
+                          type="button"
+                          onClick={() => openProduct(product)}
+                          className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-medium text-[#6c786e] hover:text-[#24352c] hover:underline"
+                        >
+                          {product.reviewCount ? (
+                            <>
+                              <Star size={11} className="fill-[#c69f63] text-[#c69f63]" />
+                              {product.ratingAverage?.toFixed(1)} ({product.reviewCount})
+                            </>
+                          ) : (
+                            <>View details</>
+                          )}
+                        </button>
+
+                        <div className="mt-3 flex items-baseline gap-2">
+                          <span className="text-base font-bold text-[#24352c]">
+                            ৳ {product.price}
                           </span>
+                          {product.oldPrice && product.oldPrice > product.price && (
+                            <span className="text-xs text-[#9b9f96] line-through">
+                              ৳ {product.oldPrice}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Mobile Compact Row Content */}
+                    <div className="flex min-w-0 flex-1 flex-col justify-between sm:hidden">
+                      <div>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="truncate text-[9px] font-bold uppercase tracking-[0.18em] text-[#838e7c]">
+                            {product.category}
+                          </p>
+                          {(discountPercent || product.badge) && (
+                            <span className="shrink-0 rounded-full bg-[#f4f1ea] px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.14em] text-[#315b45]">
+                              {discountPercent ? `-${discountPercent}%` : product.badge}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="mt-1 line-clamp-1 font-serif text-sm font-medium text-[#1e2d25]">
+                          <button
+                            type="button"
+                            onClick={() => openProduct(product)}
+                            className="text-left transition hover:text-[#4b6755]"
+                          >
+                            {product.name}
+                          </button>
+                        </h3>
+                        <div className="mt-1 flex items-center justify-between gap-2">
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-xs font-bold text-[#24352c]">
+                              ৳ {product.price}
+                            </span>
+                            {product.oldPrice && product.oldPrice > product.price && (
+                              <span className="text-[10px] text-[#9b9f96] line-through">
+                                ৳ {product.oldPrice}
+                              </span>
+                            )}
+                          </div>
+                          {product.reviewCount ? (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-[#6c786e]">
+                              <Star size={10} className="fill-[#c69f63] text-[#c69f63]" />
+                              {product.ratingAverage?.toFixed(1)}
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      <div className="mt-2.5">
+                        {product.isSample ? (
+                          <p className="rounded-full bg-[#f4f1ea] px-2.5 py-1.5 text-center text-[9px] font-medium text-[#6c786e]">
+                            Preview · Publish from Admin
+                          </p>
+                        ) : (
+                          <div className="flex gap-1.5">
+                            <button
+                              type="button"
+                              disabled={product.stock <= 0}
+                              onClick={() => updateCart(product._id, 1)}
+                              className="flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full border border-[#d6d0c2] px-2 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-[#24352c] transition hover:border-[#24352c] hover:bg-[#faf9f6] disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              <Plus size={12} /> Bag
+                            </button>
+                            <button
+                              type="button"
+                              disabled={product.stock <= 0}
+                              onClick={() => startCheckout([product], { [product._id]: 1 })}
+                              className="flex min-w-0 flex-1 items-center justify-center rounded-full bg-[#24352c] px-2 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[#344b3f] disabled:cursor-not-allowed disabled:bg-slate-400"
+                            >
+                              Buy now
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
-                  </div>
 
-                  <div className="px-1 pt-4">
-                    {product.isSample ? (
-                      <p className="rounded-full bg-[#f4f1ea] px-3 py-2.5 text-center text-[10px] font-medium text-[#6c786e]">
-                        Preview · Publish from Admin
-                      </p>
-                    ) : (
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          disabled={product.stock <= 0}
-                          onClick={() => updateCart(product._id, 1)}
-                          className="flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full border border-[#d6d0c2] px-2.5 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#24352c] transition hover:border-[#24352c] hover:bg-[#faf9f6] disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          <Plus size={13} /> Bag
-                        </button>
-                        <button
-                          type="button"
-                          disabled={product.stock <= 0}
-                          onClick={() => startCheckout([product], { [product._id]: 1 })}
-                          className="flex min-w-0 flex-1 items-center justify-center rounded-full bg-[#24352c] px-2.5 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[#344b3f] disabled:cursor-not-allowed disabled:bg-slate-400"
-                        >
-                          Buy now
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </article>
-              ))}
+                    {/* Desktop Action Footer */}
+                    <div className="hidden sm:block sm:px-1 sm:pt-4">
+                      {product.isSample ? (
+                        <p className="rounded-full bg-[#f4f1ea] px-3 py-2.5 text-center text-[10px] font-medium text-[#6c786e]">
+                          Preview · Publish from Admin
+                        </p>
+                      ) : (
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            disabled={product.stock <= 0}
+                            onClick={() => updateCart(product._id, 1)}
+                            className="flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full border border-[#d6d0c2] px-2.5 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#24352c] transition hover:border-[#24352c] hover:bg-[#faf9f6] disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            <Plus size={13} /> Bag
+                          </button>
+                          <button
+                            type="button"
+                            disabled={product.stock <= 0}
+                            onClick={() => startCheckout([product], { [product._id]: 1 })}
+                            className="flex min-w-0 flex-1 items-center justify-center rounded-full bg-[#24352c] px-2.5 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[#344b3f] disabled:cursor-not-allowed disabled:bg-slate-400"
+                          >
+                            Buy now
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>
@@ -763,7 +997,7 @@ export default function Home() {
 
       {/* Editorial Footer */}
       <footer id="contact" className="border-t border-[#ded7c8] bg-[#18241d] text-[#faf9f6]">
-        <div className="grid w-full gap-10 px-5 py-14 sm:grid-cols-2 sm:px-10 lg:grid-cols-[1.35fr_0.75fr_1fr] lg:px-14 lg:py-16">
+        <div className="grid w-full gap-8 px-5 py-12 sm:grid-cols-2 sm:gap-10 sm:px-10 lg:grid-cols-[1.35fr_0.75fr_1fr] lg:px-14 lg:py-16">
           <div>
             <div className="flex items-center gap-3">
               <img
@@ -773,10 +1007,10 @@ export default function Home() {
               />
               <span className="font-serif text-xl tracking-[0.22em] text-white">ITTADI</span>
             </div>
-            <p className="mt-4 max-w-sm text-xs leading-6 text-white/65 sm:text-sm">
+            <p className="mt-3.5 max-w-sm text-xs leading-6 text-white/65 sm:text-sm">
               Adding quiet charm to your space &amp; daily ritual. Thoughtfully curated home accents, lighting, and gifts across Bangladesh.
             </p>
-            <p className="mt-5 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-[#d9c7a6]">
+            <p className="mt-4 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-[#d9c7a6]">
               <Truck size={15} /> Delivery all over Bangladesh
             </p>
           </div>
@@ -785,7 +1019,7 @@ export default function Home() {
             <h2 className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#d9c7a6]">
               Navigation
             </h2>
-            <div className="mt-4 flex flex-col gap-3 text-xs text-white/70 sm:text-sm">
+            <div className="mt-3.5 flex flex-col gap-2.5 text-xs text-white/70 sm:text-sm">
               <a href="#products" className="transition hover:text-white">
                 Curated collection
               </a>
@@ -813,7 +1047,7 @@ export default function Home() {
             <h2 className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#d9c7a6]">
               Atelier &amp; Contact
             </h2>
-            <div className="mt-4 flex flex-col gap-3.5 text-xs text-white/70 sm:text-sm">
+            <div className="mt-3.5 flex flex-col gap-3 text-xs text-white/70 sm:text-sm">
               <a
                 className="flex items-start gap-2.5 transition hover:text-white"
                 href="https://maps.google.com/?q=House-11,+Gate-2,+Boshoti+Housing,+Mirpur-2,+Dhaka"
