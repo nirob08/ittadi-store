@@ -391,11 +391,14 @@ function CustomerHub({
       setError('');
       setSuccess('');
       setPanel(nextPanel);
-      if (nextPanel === 'support') setTab('support');
+      if (nextPanel === 'support') {
+        setTab('support');
+        void loadMessages();
+      }
       if (nextPanel === 'notifications') void loadNotifications();
       if (nextPanel === 'account') void loadSession();
     },
-    [loadNotifications, loadSession],
+    [loadMessages, loadNotifications, loadSession],
   );
 
   const handleAuth = async (event: FormEvent<HTMLFormElement>) => {
@@ -424,6 +427,7 @@ function CustomerHub({
       setSuccess(authMode === 'register' ? 'Your account is ready.' : 'Welcome back.');
       if (!checkoutItems) setTab(accountPage ? 'dashboard' : 'profile');
       void loadOrders();
+      void loadMessages();
     } catch (authError) {
       setError(authError instanceof Error ? authError.message : 'Sign-in failed.');
     } finally {
@@ -651,6 +655,318 @@ function CustomerHub({
     { id: 'support', label: 'Support chat', icon: MessageCircle },
   ];
 
+  const renderSupportThread = () => (
+    <div className="flex min-h-[380px] flex-1 flex-col justify-between gap-4">
+      <p className="text-xs leading-5 text-[var(--text-secondary)]">
+        Send our team a message. Replies will appear here while you are signed in.
+      </p>
+      <div className="max-h-[340px] min-h-[220px] flex-1 space-y-3 overflow-y-auto rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-page)] p-4">
+        {messages.length === 0 ? (
+          <p className="py-12 text-center text-xs text-[var(--text-muted)]">
+            No messages yet. How can we help?
+          </p>
+        ) : (
+          messages.map((message) => (
+            <div
+              key={message._id}
+              className={`flex ${message.sender === 'customer' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${
+                  message.sender === 'customer'
+                    ? 'rounded-br-md bg-[#16261e] text-[#fbf8f1] dark:bg-[#d8c39b] dark:text-[#101d17]'
+                    : 'rounded-bl-md border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-primary)]'
+                }`}
+              >
+                <p className="whitespace-pre-wrap text-xs leading-5">{message.text}</p>
+                <time className="mt-1 block text-[9px] opacity-65">
+                  {new Date(message.createdAt).toLocaleString()}
+                </time>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+      <form onSubmit={sendMessage} className="flex items-end gap-2.5">
+        <textarea
+          aria-label="Your support message"
+          rows={2}
+          maxLength={2000}
+          required
+          value={messageDraft}
+          onChange={(event) => setMessageDraft(event.target.value)}
+          className="w-full flex-1 resize-none rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-page)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[#c8ad74]"
+          placeholder="Write a message…"
+        />
+        <button
+          type="submit"
+          disabled={busy || !messageDraft.trim()}
+          aria-label="Send message"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#16261e] text-[#fbf8f1] transition hover:bg-[#243c30] disabled:opacity-50 dark:bg-[#d8c39b] dark:text-[#101d17]"
+        >
+          <Send size={17} />
+        </button>
+      </form>
+    </div>
+  );
+
+  const renderProfileForm = () => (
+    <>
+      <div className="mb-5">
+        <h3 className="font-serif text-2xl">Your customer profile</h3>
+        <p className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
+          Save your contact and delivery details here. You can review order updates in My orders.
+        </p>
+      </div>
+      <form onSubmit={saveProfile} className="grid gap-4 sm:grid-cols-2">
+        <div className="flex items-center gap-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-page)] p-4 sm:col-span-2">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#16261e] text-lg font-bold text-[#e5d2ac]">
+            {profile.avatarUrl ? (
+              <img src={profile.avatarUrl} alt="Profile photo preview" className="h-full w-full object-cover" />
+            ) : (
+              <span>{initials}</span>
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold">Profile photo</p>
+            <p className="mt-1 text-[11px] leading-5 text-[var(--text-secondary)]">
+              JPG, PNG or WebP. Photos are resized before saving.
+            </p>
+            <div className="mt-2 flex flex-wrap gap-3">
+              <label className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-[#8c6e3b] dark:text-[#e5d2ac]">
+                <Camera size={14} /> {profile.avatarUrl ? 'Change photo' : 'Upload photo'}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="sr-only"
+                  onChange={(event) => void chooseAvatar(event)}
+                />
+              </label>
+              {profile.avatarUrl && (
+                <button
+                  type="button"
+                  onClick={() => setProfile({ ...profile, avatarUrl: '' })}
+                  className="text-xs font-semibold text-[var(--text-muted)] hover:text-rose-600"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        <label className="text-xs font-semibold text-[var(--text-secondary)]">
+          Full name
+          <input
+            className={inputClass}
+            required
+            minLength={2}
+            maxLength={120}
+            value={profile.name}
+            onChange={(event) => setProfile({ ...profile, name: event.target.value })}
+          />
+        </label>
+        <label className="text-xs font-semibold text-[var(--text-secondary)]">
+          Email
+          <input className={`${inputClass} opacity-75`} readOnly value={customer?.email || ''} />
+        </label>
+        <label className="text-xs font-semibold text-[var(--text-secondary)] sm:col-span-2">
+          Phone number
+          <input
+            className={inputClass}
+            type="tel"
+            autoComplete="tel"
+            value={profile.phone}
+            onChange={(event) => setProfile({ ...profile, phone: event.target.value })}
+            placeholder="+880 1XXX-XXXXXX"
+          />
+        </label>
+        <label className="text-xs font-semibold text-[var(--text-secondary)] sm:col-span-2">
+          Street address
+          <input
+            className={inputClass}
+            autoComplete="street-address"
+            value={profile.address.street}
+            onChange={(event) =>
+              setProfile({ ...profile, address: { ...profile.address, street: event.target.value } })
+            }
+            placeholder="House, road and street"
+          />
+        </label>
+        <label className="text-xs font-semibold text-[var(--text-secondary)]">
+          Area / thana
+          <input
+            className={inputClass}
+            autoComplete="address-level3"
+            value={profile.address.area}
+            onChange={(event) =>
+              setProfile({ ...profile, address: { ...profile.address, area: event.target.value } })
+            }
+            placeholder="Mirpur"
+          />
+        </label>
+        <label className="text-xs font-semibold text-[var(--text-secondary)]">
+          District
+          <input
+            className={inputClass}
+            autoComplete="address-level1"
+            value={profile.address.district}
+            onChange={(event) =>
+              setProfile({ ...profile, address: { ...profile.address, district: event.target.value } })
+            }
+            placeholder="Dhaka"
+          />
+        </label>
+        <label className="text-xs font-semibold text-[var(--text-secondary)]">
+          Postcode (optional)
+          <input
+            className={inputClass}
+            autoComplete="postal-code"
+            value={profile.address.postalCode}
+            onChange={(event) =>
+              setProfile({
+                ...profile,
+                address: { ...profile.address, postalCode: event.target.value },
+              })
+            }
+            placeholder="1216"
+          />
+        </label>
+        <div className="flex items-end">
+          <button
+            type="button"
+            onClick={captureLocation}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border-subtle)] px-3 py-3 text-xs font-semibold transition hover:border-[#c8ad74]"
+          >
+            <Crosshair size={15} /> {profile.location ? 'Update saved location' : 'Use my current location'}
+          </button>
+        </div>
+        {profile.location && (
+          <p className="text-[10px] text-[#8c6e3b] dark:text-[#e5d2ac] sm:col-span-2">
+            Location captured: {profile.location.latitude}, {profile.location.longitude}
+          </p>
+        )}
+        <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
+          <button
+            disabled={busy}
+            type="submit"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#16261e] px-5 py-3 text-xs font-bold text-[#fbf8f1] transition hover:bg-[#243c30] disabled:opacity-60"
+          >
+            <Check size={15} /> Save details
+          </button>
+          <span className="text-[10px] text-[var(--text-muted)]">
+            Location is only shared when you choose to capture it.
+          </span>
+        </div>
+      </form>
+    </>
+  );
+
+  const renderOrdersList = () => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs text-[var(--text-secondary)]">Track your recent deliveries and status updates.</p>
+        <button
+          type="button"
+          onClick={() => void loadOrders()}
+          className="text-xs font-bold text-[#8c6e3b] dark:text-[#e5d2ac]"
+        >
+          Refresh
+        </button>
+      </div>
+      {orders.length === 0 ? (
+        <div className="py-12 text-center">
+          <PackageCheck className="mx-auto text-[#c8ad74]" size={28} />
+          <p className="mt-3 font-serif text-xl">No orders just yet.</p>
+          <p className="mt-2 text-xs text-[var(--text-secondary)]">Your orders will appear here after checkout.</p>
+        </div>
+      ) : (
+        orders.map((order) => (
+          <article
+            key={order._id}
+            className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-page)] p-4 sm:p-5"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#c8ad74]">
+                  {order.orderNumber}
+                </p>
+                <time className="mt-1 block text-[10px] text-[var(--text-muted)]">
+                  {new Date(order.createdAt).toLocaleString()}
+                </time>
+              </div>
+              <span className="rounded-full bg-[#c8ad74]/20 px-3 py-1.5 text-[10px] font-bold text-[#8c6e3b] dark:text-[#e5d2ac]">
+                {order.status}
+              </span>
+            </div>
+            {(order.currentLocation || order.trackingNote) && (
+              <section
+                aria-label={`Tracking update for order ${order.orderNumber}`}
+                className="mt-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3.5"
+              >
+                <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#c8ad74]">
+                  Live delivery update
+                </p>
+                {order.currentLocation && (
+                  <p className="mt-1 text-xs font-bold">{order.currentLocation}</p>
+                )}
+                {order.trackingNote && (
+                  <p className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">{order.trackingNote}</p>
+                )}
+              </section>
+            )}
+            <div className="mt-4 space-y-2 border-y border-[var(--border-subtle)] py-3">
+              {order.items.map((item, index) => (
+                <div key={`${item.name}-${index}`} className="flex justify-between gap-3 text-xs">
+                  <span className="text-[var(--text-secondary)]">
+                    {item.name} × {item.quantity}
+                  </span>
+                  <span className="font-semibold">
+                    ৳ {item.unitPrice * item.quantity}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 space-y-1 text-xs">
+              <div className="flex justify-between">
+                <span className="text-[var(--text-secondary)]">Subtotal</span>
+                <span>৳ {order.subtotal ?? order.total}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--text-secondary)]">Delivery</span>
+                <span>৳ {order.deliveryFee ?? 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--text-secondary)]">Payment</span>
+                <span>
+                  {order.paymentMethod || 'Cash on delivery'} ·{' '}
+                  {order.paymentStatus === 'paid'
+                    ? 'Paid'
+                    : order.paymentStatus === 'review'
+                      ? 'Needs review'
+                      : order.paymentStatus === 'failed'
+                        ? 'Failed'
+                        : order.paymentMethod === 'Cash on delivery'
+                          ? 'Pay on delivery'
+                          : 'Pending verification'}
+                </span>
+              </div>
+              {order.paymentReference && (
+                <div className="flex justify-between">
+                  <span className="text-[var(--text-secondary)]">TxnID</span>
+                  <span>{order.paymentReference}</span>
+                </div>
+              )}
+              <div className="flex justify-between pt-1 font-bold">
+                <span>Total</span>
+                <span>৳ {order.total}</span>
+              </div>
+            </div>
+          </article>
+        ))
+      )}
+    </div>
+  );
+
   return (
     <>
       {!accountPage && (
@@ -688,7 +1004,7 @@ function CustomerHub({
           className={
             accountPage
               ? 'mx-auto w-full max-w-7xl px-4 py-6 sm:px-8 sm:py-8'
-              : 'fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/45 p-0 backdrop-blur-sm sm:items-center sm:p-5'
+              : 'fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/55 p-0 backdrop-blur-sm sm:items-center sm:p-5'
           }
           onMouseDown={
             !accountPage
@@ -717,7 +1033,6 @@ function CustomerHub({
                 : 'customer-hub-panel glass-panel flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-[2rem] bg-[var(--bg-surface)] shadow-2xl sm:max-h-[88vh] sm:max-w-3xl sm:rounded-[2rem]'
             }
           >
-            {/* Top Bar for Modal / Non-logged-in Account */}
             {(!accountPage || !customer) && (
               <header className="flex items-start justify-between gap-4 border-b border-[var(--border-subtle)] px-5 py-4 sm:px-7">
                 <div>
@@ -900,9 +1215,7 @@ function CustomerHub({
                 </button>
               </div>
             ) : accountPage ? (
-              /* Full Dashboard Layout (Sidebar + Top Banner + Stat Cards + Content) */
               <div className="grid gap-6 lg:grid-cols-[250px_1fr]">
-                {/* Left Sidebar */}
                 <aside className="flex flex-col justify-between rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4 shadow-sm lg:p-5">
                   <div>
                     <div className="rounded-2xl border border-[#c8ad74]/25 bg-gradient-to-br from-[#122019] via-[#1c3026] to-[#284235] p-4 text-[#fbf8f1]">
@@ -961,9 +1274,7 @@ function CustomerHub({
                   </div>
                 </aside>
 
-                {/* Right Main Workspace */}
                 <div className="min-w-0 space-y-6">
-                  {/* Top Gradient Banner */}
                   <section className="relative overflow-hidden rounded-3xl border border-[#c8ad74]/25 bg-gradient-to-r from-[#0e1914] via-[#1a2e24] to-[#2a4235] px-6 py-6 text-[#fbf8f1] shadow-md sm:px-8 sm:py-7">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                       <div>
@@ -1006,7 +1317,6 @@ function CustomerHub({
                     </p>
                   )}
 
-                  {/* Stat Cards Row */}
                   <section aria-label="Account summary" className="grid grid-cols-2 gap-3.5 sm:grid-cols-4 sm:gap-4">
                     <button
                       type="button"
@@ -1063,7 +1373,6 @@ function CustomerHub({
                     </div>
                   </section>
 
-                  {/* Tab Content Card */}
                   <div className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 shadow-sm sm:p-7">
                     {activeTab === 'dashboard' && (
                       <div className="space-y-6">
@@ -1138,7 +1447,6 @@ function CustomerHub({
                           </div>
                         )}
 
-                        {/* Saved Address Quick Card */}
                         <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-page)] p-4 sm:p-5">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#c8ad74]">
@@ -1162,322 +1470,14 @@ function CustomerHub({
                       </div>
                     )}
 
-                    {activeTab === 'profile' && (
-                      <>
-                        <div className="mb-5">
-                          <h3 className="font-serif text-2xl">Your customer profile</h3>
-                          <p className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
-                            Save your contact and delivery details here. You can review order updates in My orders.
-                          </p>
-                        </div>
-                        <form onSubmit={saveProfile} className="grid gap-4 sm:grid-cols-2">
-                          <div className="flex items-center gap-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-page)] p-4 sm:col-span-2">
-                            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#16261e] text-lg font-bold text-[#e5d2ac]">
-                              {profile.avatarUrl ? (
-                                <img src={profile.avatarUrl} alt="Profile photo preview" className="h-full w-full object-cover" />
-                              ) : (
-                                <span>{initials}</span>
-                              )}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-bold">Profile photo</p>
-                              <p className="mt-1 text-[11px] leading-5 text-[var(--text-secondary)]">
-                                JPG, PNG or WebP. Photos are resized before saving.
-                              </p>
-                              <div className="mt-2 flex flex-wrap gap-3">
-                                <label className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-[#8c6e3b] dark:text-[#e5d2ac]">
-                                  <Camera size={14} /> {profile.avatarUrl ? 'Change photo' : 'Upload photo'}
-                                  <input
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp"
-                                    className="sr-only"
-                                    onChange={(event) => void chooseAvatar(event)}
-                                  />
-                                </label>
-                                {profile.avatarUrl && (
-                                  <button
-                                    type="button"
-                                    onClick={() => setProfile({ ...profile, avatarUrl: '' })}
-                                    className="text-xs font-semibold text-[var(--text-muted)] hover:text-rose-600"
-                                  >
-                                    Remove
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <label className="text-xs font-semibold text-[var(--text-secondary)]">
-                            Full name
-                            <input
-                              className={inputClass}
-                              required
-                              minLength={2}
-                              maxLength={120}
-                              value={profile.name}
-                              onChange={(event) => setProfile({ ...profile, name: event.target.value })}
-                            />
-                          </label>
-                          <label className="text-xs font-semibold text-[var(--text-secondary)]">
-                            Email
-                            <input className={`${inputClass} opacity-75`} readOnly value={customer.email} />
-                          </label>
-                          <label className="text-xs font-semibold text-[var(--text-secondary)] sm:col-span-2">
-                            Phone number
-                            <input
-                              className={inputClass}
-                              type="tel"
-                              autoComplete="tel"
-                              value={profile.phone}
-                              onChange={(event) => setProfile({ ...profile, phone: event.target.value })}
-                              placeholder="+880 1XXX-XXXXXX"
-                            />
-                          </label>
-                          <label className="text-xs font-semibold text-[var(--text-secondary)] sm:col-span-2">
-                            Street address
-                            <input
-                              className={inputClass}
-                              autoComplete="street-address"
-                              value={profile.address.street}
-                              onChange={(event) =>
-                                setProfile({ ...profile, address: { ...profile.address, street: event.target.value } })
-                              }
-                              placeholder="House, road and street"
-                            />
-                          </label>
-                          <label className="text-xs font-semibold text-[var(--text-secondary)]">
-                            Area / thana
-                            <input
-                              className={inputClass}
-                              autoComplete="address-level3"
-                              value={profile.address.area}
-                              onChange={(event) =>
-                                setProfile({ ...profile, address: { ...profile.address, area: event.target.value } })
-                              }
-                              placeholder="Mirpur"
-                            />
-                          </label>
-                          <label className="text-xs font-semibold text-[var(--text-secondary)]">
-                            District
-                            <input
-                              className={inputClass}
-                              autoComplete="address-level1"
-                              value={profile.address.district}
-                              onChange={(event) =>
-                                setProfile({ ...profile, address: { ...profile.address, district: event.target.value } })
-                              }
-                              placeholder="Dhaka"
-                            />
-                          </label>
-                          <label className="text-xs font-semibold text-[var(--text-secondary)]">
-                            Postcode (optional)
-                            <input
-                              className={inputClass}
-                              autoComplete="postal-code"
-                              value={profile.address.postalCode}
-                              onChange={(event) =>
-                                setProfile({
-                                  ...profile,
-                                  address: { ...profile.address, postalCode: event.target.value },
-                                })
-                              }
-                              placeholder="1216"
-                            />
-                          </label>
-                          <div className="flex items-end">
-                            <button
-                              type="button"
-                              onClick={captureLocation}
-                              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border-subtle)] px-3 py-3 text-xs font-semibold transition hover:border-[#c8ad74]"
-                            >
-                              <Crosshair size={15} /> {profile.location ? 'Update saved location' : 'Use my current location'}
-                            </button>
-                          </div>
-                          {profile.location && (
-                            <p className="text-[10px] text-[#8c6e3b] dark:text-[#e5d2ac] sm:col-span-2">
-                              Location captured: {profile.location.latitude}, {profile.location.longitude}
-                            </p>
-                          )}
-                          <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
-                            <button
-                              disabled={busy}
-                              type="submit"
-                              className="inline-flex items-center gap-2 rounded-xl bg-[#16261e] px-5 py-3 text-xs font-bold text-[#fbf8f1] transition hover:bg-[#243c30] disabled:opacity-60"
-                            >
-                              <Check size={15} /> Save details
-                            </button>
-                            <span className="text-[10px] text-[var(--text-muted)]">
-                              Location is only shared when you choose to capture it.
-                            </span>
-                          </div>
-                        </form>
-                      </>
-                    )}
-
-                    {activeTab === 'orders' && (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="text-xs text-[var(--text-secondary)]">Track your recent deliveries and status updates.</p>
-                          <button
-                            type="button"
-                            onClick={() => void loadOrders()}
-                            className="text-xs font-bold text-[#8c6e3b] dark:text-[#e5d2ac]"
-                          >
-                            Refresh
-                          </button>
-                        </div>
-                        {orders.length === 0 ? (
-                          <div className="py-12 text-center">
-                            <PackageCheck className="mx-auto text-[#c8ad74]" size={28} />
-                            <p className="mt-3 font-serif text-xl">No orders just yet.</p>
-                            <p className="mt-2 text-xs text-[var(--text-secondary)]">Your orders will appear here after checkout.</p>
-                          </div>
-                        ) : (
-                          orders.map((order) => (
-                            <article
-                              key={order._id}
-                              className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-page)] p-4 sm:p-5"
-                            >
-                              <div className="flex flex-wrap items-start justify-between gap-3">
-                                <div>
-                                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#c8ad74]">
-                                    {order.orderNumber}
-                                  </p>
-                                  <time className="mt-1 block text-[10px] text-[var(--text-muted)]">
-                                    {new Date(order.createdAt).toLocaleString()}
-                                  </time>
-                                </div>
-                                <span className="rounded-full bg-[#c8ad74]/20 px-3 py-1.5 text-[10px] font-bold text-[#8c6e3b] dark:text-[#e5d2ac]">
-                                  {order.status}
-                                </span>
-                              </div>
-                              {(order.currentLocation || order.trackingNote) && (
-                                <section
-                                  aria-label={`Tracking update for order ${order.orderNumber}`}
-                                  className="mt-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3.5"
-                                >
-                                  <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#c8ad74]">
-                                    Live delivery update
-                                  </p>
-                                  {order.currentLocation && (
-                                    <p className="mt-1 text-xs font-bold">{order.currentLocation}</p>
-                                  )}
-                                  {order.trackingNote && (
-                                    <p className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">{order.trackingNote}</p>
-                                  )}
-                                </section>
-                              )}
-                              <div className="mt-4 space-y-2 border-y border-[var(--border-subtle)] py-3">
-                                {order.items.map((item, index) => (
-                                  <div key={`${item.name}-${index}`} className="flex justify-between gap-3 text-xs">
-                                    <span className="text-[var(--text-secondary)]">
-                                      {item.name} × {item.quantity}
-                                    </span>
-                                    <span className="font-semibold">
-                                      ৳ {item.unitPrice * item.quantity}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                              <div className="mt-3 space-y-1 text-xs">
-                                <div className="flex justify-between">
-                                  <span className="text-[var(--text-secondary)]">Subtotal</span>
-                                  <span>৳ {order.subtotal ?? order.total}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-[var(--text-secondary)]">Delivery</span>
-                                  <span>৳ {order.deliveryFee ?? 0}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-[var(--text-secondary)]">Payment</span>
-                                  <span>
-                                    {order.paymentMethod || 'Cash on delivery'} ·{' '}
-                                    {order.paymentStatus === 'paid'
-                                      ? 'Paid'
-                                      : order.paymentStatus === 'review'
-                                        ? 'Needs review'
-                                        : order.paymentStatus === 'failed'
-                                          ? 'Failed'
-                                          : order.paymentMethod === 'Cash on delivery'
-                                            ? 'Pay on delivery'
-                                            : 'Pending verification'}
-                                  </span>
-                                </div>
-                                {order.paymentReference && (
-                                  <div className="flex justify-between">
-                                    <span className="text-[var(--text-secondary)]">TxnID</span>
-                                    <span>{order.paymentReference}</span>
-                                  </div>
-                                )}
-                                <div className="flex justify-between pt-1 font-bold">
-                                  <span>Total</span>
-                                  <span>৳ {order.total}</span>
-                                </div>
-                              </div>
-                            </article>
-                          ))
-                        )}
-                      </div>
-                    )}
-
-                    {activeTab === 'support' && (
-                      <div className="flex min-h-[360px] flex-col">
-                        <p className="mb-4 text-xs leading-5 text-[var(--text-secondary)]">
-                          Send our team a message. Replies will appear here while you are signed in.
-                        </p>
-                        <div className="flex-1 space-y-3 overflow-y-auto rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-page)] p-4">
-                          {messages.length === 0 ? (
-                            <p className="py-12 text-center text-xs text-[var(--text-muted)]">
-                              No messages yet. How can we help?
-                            </p>
-                          ) : (
-                            messages.map((message) => (
-                              <div
-                                key={message._id}
-                                className={`flex ${message.sender === 'customer' ? 'justify-end' : 'justify-start'}`}
-                              >
-                                <div
-                                  className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${
-                                    message.sender === 'customer'
-                                      ? 'rounded-br-md bg-[#16261e] text-[#fbf8f1]'
-                                      : 'rounded-bl-md bg-[var(--bg-surface)] text-[var(--text-primary)]'
-                                  }`}
-                                >
-                                  <p className="whitespace-pre-wrap text-xs leading-5">{message.text}</p>
-                                  <time className="mt-1 block text-[9px] opacity-65">
-                                    {new Date(message.createdAt).toLocaleString()}
-                                  </time>
-                                </div>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                        <form onSubmit={sendMessage} className="mt-3 flex items-end gap-2">
-                          <textarea
-                            aria-label="Your support message"
-                            rows={2}
-                            maxLength={2000}
-                            required
-                            value={messageDraft}
-                            onChange={(event) => setMessageDraft(event.target.value)}
-                            className="w-full resize-none rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-page)] px-3.5 py-3 text-sm outline-none focus:border-[#c8ad74]"
-                            placeholder="Write a message…"
-                          />
-                          <button
-                            type="submit"
-                            disabled={busy || !messageDraft.trim()}
-                            aria-label="Send message"
-                            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#16261e] text-[#fbf8f1] transition hover:bg-[#243c30] disabled:opacity-50"
-                          >
-                            <Send size={17} />
-                          </button>
-                        </form>
-                      </div>
-                    )}
+                    {activeTab === 'profile' && renderProfileForm()}
+                    {activeTab === 'orders' && renderOrdersList()}
+                    {activeTab === 'support' && renderSupportThread()}
                   </div>
                 </div>
               </div>
             ) : (
-              /* Modal / Checkout View */
+              /* Modal View (Profile, My orders, Support, Checkout) */
               <>
                 <nav
                   aria-label="Customer account tabs"
@@ -1503,8 +1503,8 @@ function CustomerHub({
                           if (item === 'support') void loadMessages();
                         }}
                         className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-semibold transition ${
-                          tab === item
-                            ? 'bg-[#16261e] text-[#fbf8f1]'
+                          activeTab === item
+                            ? 'bg-[#16261e] text-[#fbf8f1] dark:bg-[#d8c39b] dark:text-[#101d17]'
                             : 'text-[var(--text-secondary)] hover:bg-[var(--bg-surface-soft)]'
                         }`}
                       >
@@ -1531,7 +1531,13 @@ function CustomerHub({
                   </p>
                 )}
 
-                <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-7">
+                <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-5 sm:p-7">
+                  {activeTab === 'profile' && renderProfileForm()}
+
+                  {activeTab === 'orders' && renderOrdersList()}
+
+                  {activeTab === 'support' && renderSupportThread()}
+
                   {activeTab === 'checkout' && (
                     <form onSubmit={placeOrder} className="space-y-5">
                       <fieldset className="space-y-2">
