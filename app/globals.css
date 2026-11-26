@@ -3,6 +3,9 @@
 :root {
   --background: #faf9f6;
   --foreground: #24352c;
+  --accent-gold: #d9c7a6;
+  --forest-deep: #17251e;
+  --forest-mid: #24352c;
   color-scheme: light;
 }
 
@@ -19,46 +22,56 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 6rem;
+  scroll-padding-top: 6.5rem;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 240ms ease, color 240ms ease;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 260ms ease, color 260ms ease;
+}
+
+h1, h2, h3, .font-serif-editorial {
+  font-family: Georgia, "Playfair Display", "Times New Roman", serif;
+  letter-spacing: -0.02em;
 }
 
 ::selection {
   background: #d9c7a6;
-  color: #24352c;
+  color: #17251e;
 }
 
 .glass-nav {
-  background: rgba(250, 249, 246, 0.88);
-  border-color: rgba(226, 221, 210, 0.88);
-  box-shadow: 0 6px 24px rgba(36, 53, 44, 0.035);
+  background: rgba(250, 249, 246, 0.84);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-color: rgba(36, 53, 44, 0.08);
+  box-shadow: 0 10px 32px rgba(23, 37, 30, 0.04);
 }
 
 .glass-panel {
-  border: 1px solid rgba(255, 255, 255, 0.82);
-  background: rgba(250, 249, 246, 0.92);
-  box-shadow: 0 18px 55px rgba(36, 53, 44, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 20px 55px rgba(23, 37, 30, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .premium-card {
-  border: 1px solid rgba(229, 224, 212, 0.9);
-  border-radius: 1.25rem;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 10px 30px rgba(36, 53, 44, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 260ms ease, border-color 260ms ease;
+  border: 1px solid rgba(36, 53, 44, 0.08);
+  border-radius: 1.35rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 32px rgba(23, 37, 30, 0.045), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 320ms ease, border-color 320ms ease;
 }
 
 .premium-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(130, 144, 120, 0.55);
-  box-shadow: 0 20px 44px rgba(36, 53, 44, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  transform: translateY(-5px);
+  border-color: rgba(217, 199, 166, 0.85);
+  box-shadow: 0 24px 48px rgba(23, 37, 30, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
 button,
@@ -68,106 +81,7 @@ a {
 
 button:not(:disabled) {
   transition-property: transform, background-color, border-color, color, box-shadow, opacity;
-  transition-duration: 180ms;
-}
-
-html[data-theme="dark"] {
-  color-scheme: dark;
-  --background: #0f172a;
-  --foreground: #e2e8f0;
-}
-
-html[data-theme="dark"] body {
-  background:
-    radial-gradient(ellipse at 12% 0%, rgba(56, 189, 248, 0.08), transparent 34rem),
-    radial-gradient(ellipse at 88% 18%, rgba(167, 139, 250, 0.07), transparent 32rem),
-    var(--background);
-  color: var(--foreground);
-}
-
-html[data-theme="dark"] .storefront-shell {
-  background:
-    radial-gradient(ellipse at 2% 20%, rgba(56, 189, 248, 0.055), transparent 30rem),
-    radial-gradient(ellipse at 96% 54%, rgba(167, 139, 250, 0.055), transparent 32rem),
-    #0f172a;
-}
-
-html[data-theme="dark"] .admin-shell,
-html[data-theme="dark"] .product-page-shell,
-html[data-theme="dark"] .customer-hub-shell {
-  background:
-    radial-gradient(ellipse at 2% 8%, rgba(56, 189, 248, 0.055), transparent 28rem),
-    radial-gradient(ellipse at 98% 48%, rgba(167, 139, 250, 0.05), transparent 30rem),
-    #0f172a;
-}
-
-html[data-theme="dark"] .glass-control,
-html[data-theme="dark"] .glass-control:hover,
-html[data-theme="dark"] .glass-control:focus-within {
-  border-color: rgba(148, 163, 184, 0.14) !important;
-  background: rgba(30, 41, 59, 0.72) !important;
-  box-shadow: none !important;
-}
-
-html[data-theme="dark"] .glass-control input,
-html[data-theme="dark"] input[type="search"] {
-  border: none !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
-
-html[data-theme="dark"] .glass-nav a,
-html[data-theme="dark"] .glass-nav button {
-  border-color: rgba(148, 163, 184, 0.12) !important;
-}
-
-html[data-theme="dark"] .feature-strip,
-html[data-theme="dark"] .customer-profile-tile {
-  border-color: rgba(148, 163, 184, 0.18);
-  background: rgba(24, 35, 54, 0.74);
-  box-shadow: 0 18px 50px rgba(2, 6, 23, 0.24), inset 0 1px 0 rgba(226, 232, 240, 0.035);
-}
-
-html[data-theme="dark"] .admin-hero {
-  border-color: rgba(148, 163, 184, 0.18);
-}
-
-html[data-theme="dark"] .customer-account-hero {
-  border-color: rgba(148, 163, 184, 0.2);
-  background:
-    radial-gradient(ellipse at 82% 10%, rgba(56, 189, 248, 0.1), transparent 22rem),
-    linear-gradient(125deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.78) 58%, rgba(39, 44, 61, 0.86));
-}
-
-html[data-theme="dark"] .product-image-frame {
-  background:
-    radial-gradient(ellipse at 50% 30%, rgba(148, 163, 184, 0.14), transparent 65%),
-    #1e293b;
-}
-
-html[data-theme="dark"] .category-pill:not([aria-pressed="true"]) {
-  border-color: rgba(148, 163, 184, 0.22);
-  color: #cbd5e1;
-  background: rgba(30, 41, 59, 0.68);
-}
-
-html[data-theme="dark"] .glass-nav {
-  background: rgba(15, 23, 42, 0.84);
-  border-color: rgba(148, 163, 184, 0.2);
-  box-shadow: 0 8px 36px rgba(2, 6, 23, 0.24);
-}
-
-html[data-theme="dark"] .glass-panel,
-html[data-theme="dark"] .premium-card {
-  border-color: rgba(148, 163, 184, 0.18);
-  background: rgba(24, 35, 54, 0.78);
-  box-shadow: 0 20px 60px rgba(2, 6, 23, 0.32), inset 0 1px 0 rgba(226, 232, 240, 0.035);
-}
-
-html[data-theme="dark"] .premium-card:hover {
-  border-color: rgba(56, 189, 248, 0.32);
-  box-shadow: 0 24px 58px rgba(2, 6, 23, 0.44), 0 0 24px rgba(56, 189, 248, 0.06);
+  transition-duration: 200ms;
 }
 
 .storefront-shell,
@@ -180,27 +94,29 @@ html[data-theme="dark"] .premium-card:hover {
 
 .storefront-shell {
   background:
-    radial-gradient(ellipse at 2% 20%, rgba(196, 171, 126, 0.12), transparent 30rem),
-    radial-gradient(ellipse at 96% 54%, rgba(130, 144, 120, 0.09), transparent 32rem),
+    radial-gradient(ellipse at 6% 14%, rgba(217, 199, 166, 0.16), transparent 34rem),
+    radial-gradient(ellipse at 94% 48%, rgba(48, 69, 57, 0.07), transparent 36rem),
     #faf9f6;
 }
 
 .announcement-bar {
-  background: linear-gradient(100deg, #17251e, #26382c 55%, #1a2921);
+  background: linear-gradient(100deg, #131f19 0%, #22342a 55%, #16241d 100%);
+  letter-spacing: 0.06em;
 }
 
 .brand-wordmark {
-  transition: letter-spacing 220ms ease, color 220ms ease;
+  letter-spacing: 0.16em;
+  transition: letter-spacing 260ms ease, color 220ms ease;
 }
 
 .brand-wordmark:hover {
-  letter-spacing: 0.22em;
+  letter-spacing: 0.24em;
 }
 
 .main-nav-links a {
   position: relative;
   padding-block: 0.35rem;
-  transition: color 180ms ease;
+  transition: color 200ms ease;
 }
 
 .main-nav-links a::after {
@@ -208,12 +124,12 @@ html[data-theme="dark"] .premium-card:hover {
   right: 0;
   bottom: 0;
   left: 0;
-  height: 1px;
+  height: 1.5px;
   content: "";
   background: currentColor;
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 220ms ease;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .main-nav-links a:hover::after,
@@ -222,20 +138,22 @@ html[data-theme="dark"] .premium-card:hover {
 }
 
 .glass-control {
-  background: rgba(255, 255, 255, 0.88);
-  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(36, 53, 44, 0.12);
+  transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease;
 }
 
 .glass-control:focus-within,
 .glass-control:hover {
-  border-color: rgba(36, 53, 44, 0.65);
-  box-shadow: 0 6px 24px rgba(36, 53, 44, 0.08);
+  border-color: rgba(184, 154, 102, 0.7);
+  box-shadow: 0 8px 24px rgba(23, 37, 30, 0.06);
 }
 
 .hero-stage {
   background:
-    radial-gradient(ellipse at 76% 10%, rgba(115, 145, 117, 0.27), transparent 34rem),
-    linear-gradient(118deg, #17241e 0%, #24352c 50%, #304539 100%);
+    radial-gradient(ellipse at 78% 15%, rgba(217, 199, 166, 0.14), transparent 36rem),
+    radial-gradient(ellipse at 20% 85%, rgba(88, 116, 93, 0.22), transparent 34rem),
+    linear-gradient(125deg, #131f19 0%, #1f3027 52%, #2a3f34 100%);
 }
 
 .hero-stage::after {
@@ -243,8 +161,8 @@ html[data-theme="dark"] .premium-card:hover {
   z-index: -1;
   inset: 0;
   content: "";
-  opacity: 0.3;
-  background: linear-gradient(112deg, transparent 20%, rgba(255, 255, 255, 0.035) 50%, transparent 76%);
+  opacity: 0.25;
+  background: linear-gradient(112deg, transparent 22%, rgba(255, 255, 255, 0.04) 50%, transparent 78%);
   pointer-events: none;
 }
 
@@ -254,40 +172,41 @@ html[data-theme="dark"] .premium-card:hover {
   width: 30rem;
   aspect-ratio: 1;
   border-radius: 9999px;
-  filter: blur(75px);
-  opacity: 0.32;
+  filter: blur(80px);
+  opacity: 0.28;
   pointer-events: none;
 }
 
 .hero-glow-a {
   top: -17rem;
   right: 5%;
-  background: #8e9d76;
+  background: #c8b288;
 }
 
 .hero-glow-b {
   bottom: -24rem;
   left: 14%;
-  background: #b8834e;
-  opacity: 0.19;
+  background: #58745d;
+  opacity: 0.22;
 }
 
 .hero-grid-pattern {
   position: absolute;
   z-index: -1;
   inset: 0;
-  opacity: 0.16;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  opacity: 0.14;
+  background-image: linear-gradient(rgba(217, 199, 166, 0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(217, 199, 166, 0.14) 1px, transparent 1px);
   background-position: center center;
-  background-size: 80px 80px;
-  mask-image: radial-gradient(ellipse at 72% 45%, black, transparent 66%);
+  background-size: 84px 84px;
+  mask-image: radial-gradient(ellipse at 72% 45%, black, transparent 68%);
   pointer-events: none;
 }
 
 .hero-eyebrow {
-  border-color: rgba(217, 199, 166, 0.28);
-  background: rgba(255, 255, 255, 0.055);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-color: rgba(217, 199, 166, 0.34);
+  background: rgba(217, 199, 166, 0.08);
+  color: #eadcc0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .hero-title {
@@ -295,11 +214,11 @@ html[data-theme="dark"] .premium-card:hover {
 }
 
 .hero-copy {
-  color: rgba(245, 242, 232, 0.78);
+  color: rgba(245, 242, 232, 0.82);
 }
 
 .hero-primary-cta {
-  box-shadow: 0 10px 32px rgba(217, 199, 166, 0.18);
+  box-shadow: 0 12px 30px rgba(217, 199, 166, 0.2);
 }
 
 .hero-primary-cta:hover,
@@ -506,10 +425,10 @@ html[data-theme="dark"] .premium-card:hover {
 }
 
 .feature-strip {
-  border: 1px solid rgba(232, 227, 216, 0.92);
+  border: 1px solid rgba(36, 53, 44, 0.08);
   border-radius: 1.5rem;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 12px 34px rgba(36, 53, 44, 0.05), inset 0 1px 0 #fff;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 36px rgba(23, 37, 30, 0.045), inset 0 1px 0 #fff;
 }
 
 .collection-section {
@@ -520,6 +439,7 @@ html[data-theme="dark"] .premium-card:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
+  letter-spacing: 0.16em;
 }
 
 .section-eyebrow::before {
@@ -530,7 +450,7 @@ html[data-theme="dark"] .premium-card:hover {
 }
 
 .category-pill[aria-pressed="true"] {
-  box-shadow: 0 8px 20px rgba(36, 53, 44, 0.15);
+  box-shadow: 0 10px 24px rgba(23, 37, 30, 0.16);
 }
 
 .product-card {
@@ -539,28 +459,29 @@ html[data-theme="dark"] .premium-card:hover {
 
 .product-image-frame {
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(255, 255, 255, 0.55), transparent 65%),
-    #f2efe8;
+    radial-gradient(ellipse at 50% 25%, rgba(255, 255, 255, 0.72), transparent 68%),
+    #f3f0e8;
 }
 
 .product-image-frame img {
-  transition: transform 650ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 350ms ease;
+  transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1), filter 350ms ease;
 }
 
 .product-card:hover .product-image-frame img {
+  transform: scale(1.03);
   filter: saturate(1.05);
 }
 
 .product-badge {
-  border: 1px solid rgba(228, 221, 208, 0.9);
+  border: 1px solid rgba(217, 199, 166, 0.45);
 }
 
 .product-card-info h3 {
-  transition: color 180ms ease;
+  transition: color 200ms ease;
 }
 
 .product-card:hover .product-card-info h3 {
-  color: #58745d;
+  color: #4f6b56;
 }
 
 .admin-shell {
@@ -640,18 +561,13 @@ html[data-theme="dark"] .premium-card:hover {
 .customer-actions,
 .customer-actions > div,
 .customer-actions > a,
-.customer-actions > button,
-html[data-theme="dark"] .customer-actions,
-html[data-theme="dark"] .customer-actions > div,
-html[data-theme="dark"] .customer-actions > a,
-html[data-theme="dark"] .customer-actions > button {
+.customer-actions > button {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   filter: none !important;
 }
 
-.customer-actions,
-html[data-theme="dark"] .customer-actions {
+.customer-actions {
   background: transparent !important;
   background-color: transparent !important;
   border: 0 !important;
@@ -674,18 +590,108 @@ html[data-theme="dark"] .customer-actions {
   50% { opacity: 1; transform: scale(1.08) rotate(8deg); }
 }
 
+/* Refined Luxury Dark Theme */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0d1411;
+  --foreground: #f2efe9;
+}
+
+html[data-theme="dark"] body {
+  background:
+    radial-gradient(ellipse at 14% 0%, rgba(217, 199, 166, 0.07), transparent 34rem),
+    radial-gradient(ellipse at 86% 16%, rgba(79, 107, 86, 0.14), transparent 34rem),
+    var(--background);
+  color: var(--foreground);
+}
+
+html[data-theme="dark"] .storefront-shell,
+html[data-theme="dark"] .admin-shell,
+html[data-theme="dark"] .product-page-shell,
+html[data-theme="dark"] .customer-hub-shell {
+  background:
+    radial-gradient(ellipse at 4% 16%, rgba(217, 199, 166, 0.05), transparent 30rem),
+    radial-gradient(ellipse at 96% 52%, rgba(79, 107, 86, 0.1), transparent 34rem),
+    #0d1411;
+}
+
+html[data-theme="dark"] .glass-nav {
+  background: rgba(13, 20, 17, 0.84);
+  border-color: rgba(217, 199, 166, 0.14);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .glass-control,
+html[data-theme="dark"] .glass-control:hover,
+html[data-theme="dark"] .glass-control:focus-within {
+  border-color: rgba(217, 199, 166, 0.18) !important;
+  background: rgba(24, 35, 29, 0.82) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .glass-control input,
+html[data-theme="dark"] input[type="search"] {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+html[data-theme="dark"] .glass-panel,
+html[data-theme="dark"] .premium-card,
+html[data-theme="dark"] .feature-strip,
+html[data-theme="dark"] .customer-profile-tile {
+  border-color: rgba(217, 199, 166, 0.14);
+  background: rgba(21, 31, 26, 0.86);
+  box-shadow: 0 20px 52px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(217, 199, 166, 0.06);
+}
+
+html[data-theme="dark"] .premium-card:hover {
+  border-color: rgba(217, 199, 166, 0.36);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.45), 0 0 24px rgba(217, 199, 166, 0.06);
+}
+
+html[data-theme="dark"] .product-image-frame {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(217, 199, 166, 0.08), transparent 65%),
+    #18241e;
+}
+
+html[data-theme="dark"] .category-pill:not([aria-pressed="true"]) {
+  border-color: rgba(217, 199, 166, 0.18);
+  color: #dfd7c6;
+  background: rgba(24, 35, 29, 0.78);
+}
+
+html[data-theme="dark"] .customer-actions,
+html[data-theme="dark"] .customer-actions > div,
+html[data-theme="dark"] .customer-actions > a,
+html[data-theme="dark"] .customer-actions > button {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+}
+
+html[data-theme="dark"] .customer-actions {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
 html[data-theme="dark"] [class*="bg-white"],
 html[data-theme="dark"] [class*="bg-[#faf9f6]"],
 html[data-theme="dark"] [class*="bg-[#f7f6f2]"],
 html[data-theme="dark"] [class*="bg-[#f5f3ed]"],
 html[data-theme="dark"] [class*="bg-[#f0eee8]"] {
-  background-color: rgba(30, 41, 59, 0.82) !important;
+  background-color: rgba(22, 33, 27, 0.86) !important;
 }
 
 html[data-theme="dark"] [class*="bg-[#24352c]"],
 html[data-theme="dark"] [class*="bg-[#1e2d25]"],
 html[data-theme="dark"] [class*="bg-[#18251f]"] {
-  background-color: #111827 !important;
+  background-color: #16221c !important;
 }
 
 html[data-theme="dark"] [class*="text-[#24352c]"],
@@ -695,41 +701,41 @@ html[data-theme="dark"] [class*="text-slate-900"],
 html[data-theme="dark"] [class*="text-slate-700"],
 html[data-theme="dark"] [class*="text-slate-600"],
 html[data-theme="dark"] [class*="text-slate-500"] {
-  color: #dbe5f1 !important;
+  color: #ece6d8 !important;
 }
 
 html[data-theme="dark"] [class*="border-[#e"],
 html[data-theme="dark"] [class*="border-[#d"],
 html[data-theme="dark"] [class*="border-white"] {
-  border-color: rgba(148, 163, 184, 0.16) !important;
+  border-color: rgba(217, 199, 166, 0.14) !important;
 }
 
 html[data-theme="dark"] .hero-stage .hero-title,
 html[data-theme="dark"] .hero-stage .hero-title span {
-  color: #f8fafc !important;
+  color: #fbf8f1 !important;
 }
 
 html[data-theme="dark"] .hero-stage .hero-copy {
-  color: rgba(226, 232, 240, 0.84) !important;
+  color: rgba(242, 237, 226, 0.82) !important;
 }
 
 html[data-theme="dark"] input,
 html[data-theme="dark"] textarea,
 html[data-theme="dark"] select {
-  border-color: rgba(148, 163, 184, 0.22);
-  background-color: rgba(15, 23, 42, 0.76);
-  color: #e2e8f0;
+  border-color: rgba(217, 199, 166, 0.2);
+  background-color: rgba(16, 25, 20, 0.82);
+  color: #f2efe9;
 }
 
 html[data-theme="dark"] input::placeholder,
 html[data-theme="dark"] textarea::placeholder {
-  color: #94a3b8;
+  color: #9da89f;
 }
 
 html[data-theme="dark"] .theme-toggle {
-  border-color: rgba(148, 163, 184, 0.18);
-  background: rgba(30, 41, 59, 0.82);
-  color: #fbbf24;
+  border-color: rgba(217, 199, 166, 0.24);
+  background: rgba(24, 35, 29, 0.86);
+  color: #e6d3ad;
 }
 
 .theme-icon-dark {
@@ -826,21 +832,22 @@ html[data-theme="dark"] .theme-icon-dark {
 }
 
 html[data-theme="dark"] .hero-primary-cta {
-  color: #24352c !important;
+  color: #17251e !important;
   background-color: #d9c7a6 !important;
 }
 
 html[data-theme="dark"] .hero-primary-cta:hover {
-  background-color: #fff !important;
+  background-color: #efe3cb !important;
 }
 
 html[data-theme="dark"] .hero-secondary-cta {
-  color: #fff !important;
-  background-color: rgba(255, 255, 255, 0.025) !important;
+  color: #fbf8f1 !important;
+  border-color: rgba(217, 199, 166, 0.35) !important;
+  background-color: rgba(217, 199, 166, 0.06) !important;
 }
 
 html[data-theme="dark"] .hero-secondary-cta:hover {
-  background-color: rgba(255, 255, 255, 0.12) !important;
+  background-color: rgba(217, 199, 166, 0.14) !important;
 }
 
 html[data-theme="dark"] .category-pill[aria-pressed="true"] {
