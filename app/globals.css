@@ -638,19 +638,24 @@ html[data-theme="dark"] .premium-card:hover {
 }
 
 .customer-actions,
-.customer-actions *,
+.customer-actions > div,
+.customer-actions > a,
+.customer-actions > button,
 html[data-theme="dark"] .customer-actions,
-html[data-theme="dark"] .customer-actions * {
+html[data-theme="dark"] .customer-actions > div,
+html[data-theme="dark"] .customer-actions > a,
+html[data-theme="dark"] .customer-actions > button {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  filter: none !important;
 }
 
 .customer-actions,
 html[data-theme="dark"] .customer-actions {
   background: transparent !important;
   background-color: transparent !important;
-  border: none !important;
-  outline: none !important;
+  border: 0 !important;
+  outline: 0 !important;
   box-shadow: none !important;
 }
 
@@ -763,11 +768,16 @@ html[data-theme="dark"] .theme-icon-dark {
   }
 
   .customer-actions,
-  .customer-actions *,
+  .customer-actions > div,
+  .customer-actions > a,
+  .customer-actions > button,
   html[data-theme="dark"] .customer-actions,
-  html[data-theme="dark"] .customer-actions * {
+  html[data-theme="dark"] .customer-actions > div,
+  html[data-theme="dark"] .customer-actions > a,
+  html[data-theme="dark"] .customer-actions > button {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+    filter: none !important;
   }
 
   .customer-actions,
@@ -778,8 +788,8 @@ html[data-theme="dark"] .theme-icon-dark {
     flex-direction: row;
     gap: 0.35rem;
     padding: 0.35rem;
-    border: none !important;
-    outline: none !important;
+    border: 0 !important;
+    outline: 0 !important;
     border-radius: 999px;
     background: transparent !important;
     background-color: transparent !important;
