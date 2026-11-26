@@ -101,9 +101,25 @@ html[data-theme="dark"] .customer-hub-shell {
     #0f172a;
 }
 
-html[data-theme="dark"] .glass-control {
-  border-color: rgba(148, 163, 184, 0.22);
-  background: rgba(30, 41, 59, 0.72);
+html[data-theme="dark"] .glass-control,
+html[data-theme="dark"] .glass-control:hover,
+html[data-theme="dark"] .glass-control:focus-within {
+  border-color: rgba(148, 163, 184, 0.14) !important;
+  background: rgba(30, 41, 59, 0.72) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .glass-control input,
+html[data-theme="dark"] input[type="search"] {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+html[data-theme="dark"] .glass-nav a,
+html[data-theme="dark"] .glass-nav button {
+  border-color: rgba(148, 163, 184, 0.12) !important;
 }
 
 html[data-theme="dark"] .feature-strip,
@@ -622,8 +638,15 @@ html[data-theme="dark"] .premium-card:hover {
 }
 
 html[data-theme="dark"] .customer-actions {
-  border-color: rgba(148, 163, 184, 0.2);
-  background: rgba(15, 23, 42, 0.76);
+  border-color: rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.82);
+}
+
+html[data-theme="dark"] .customer-actions > a,
+html[data-theme="dark"] .customer-actions > button {
+  border-color: rgba(148, 163, 184, 0.14) !important;
+  background-color: rgba(30, 41, 59, 0.78) !important;
+  color: #e2e8f0 !important;
 }
 
 @keyframes showcase-float {
@@ -668,13 +691,22 @@ html[data-theme="dark"] [class*="text-slate-500"] {
 html[data-theme="dark"] [class*="border-[#e"],
 html[data-theme="dark"] [class*="border-[#d"],
 html[data-theme="dark"] [class*="border-white"] {
-  border-color: rgba(148, 163, 184, 0.22) !important;
+  border-color: rgba(148, 163, 184, 0.16) !important;
+}
+
+html[data-theme="dark"] .hero-stage .hero-title,
+html[data-theme="dark"] .hero-stage .hero-title span {
+  color: #f8fafc !important;
+}
+
+html[data-theme="dark"] .hero-stage .hero-copy {
+  color: rgba(226, 232, 240, 0.84) !important;
 }
 
 html[data-theme="dark"] input,
 html[data-theme="dark"] textarea,
 html[data-theme="dark"] select {
-  border-color: rgba(148, 163, 184, 0.28);
+  border-color: rgba(148, 163, 184, 0.22);
   background-color: rgba(15, 23, 42, 0.76);
   color: #e2e8f0;
 }
@@ -685,7 +717,7 @@ html[data-theme="dark"] textarea::placeholder {
 }
 
 html[data-theme="dark"] .theme-toggle {
-  border-color: rgba(148, 163, 184, 0.24);
+  border-color: rgba(148, 163, 184, 0.18);
   background: rgba(30, 41, 59, 0.82);
   color: #fbbf24;
 }
@@ -738,31 +770,61 @@ html[data-theme="dark"] .theme-icon-dark {
     box-shadow: 0 12px 34px rgba(24, 35, 29, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.8);
     transform: translateX(-50%);
   }
-}
-html[data-theme="dark"] .glass-control,
-html[data-theme="dark"] .glass-control:hover,
-html[data-theme="dark"] .glass-control:focus-within {
-  border-color: transparent !important;
-  background: rgba(30, 41, 59, 0.72) !important;
-  box-shadow: none !important;
+
+  .customer-actions > button,
+  .customer-actions > a {
+    width: 2.65rem;
+    height: 2.65rem;
+  }
+
+  html[data-theme="dark"] .customer-actions {
+    border-color: rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.86);
+    box-shadow: 0 12px 34px rgba(2, 6, 23, 0.45), inset 0 1px 0 rgba(226, 232, 240, 0.08);
+  }
+
+  .showcase-float-top {
+    right: -0.2rem;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.55rem;
+  }
+
+  .showcase-float-bottom {
+    bottom: 9%;
+    left: -0.3rem;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .showcase-emblem {
+    width: 4.5rem;
+    border-radius: 1.5rem;
+  }
+
+  .feature-strip {
+    border-radius: 1.15rem;
+  }
 }
 
-html[data-theme="dark"] .glass-control input,
-html[data-theme="dark"] input[type="search"] {
-  border: none !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  outline: none !important;
+html[data-theme="dark"] .hero-primary-cta {
+  color: #24352c !important;
+  background-color: #d9c7a6 !important;
 }
 
-html[data-theme="dark"] .glass-nav a,
-html[data-theme="dark"] .glass-nav button {
-  border-color: transparent !important;
+html[data-theme="dark"] .hero-primary-cta:hover {
+  background-color: #fff !important;
 }
 
-html[data-theme="dark"] .customer-actions,
-html[data-theme="dark"] .customer-actions > a,
-html[data-theme="dark"] .customer-actions > button {
-  border-color: rgba(148, 163, 184, 0.14) !important;
-  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.35) !important;
+html[data-theme="dark"] .hero-secondary-cta {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.025) !important;
+}
+
+html[data-theme="dark"] .hero-secondary-cta:hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html[data-theme="dark"] .category-pill[aria-pressed="true"] {
+  border-color: #d9c7a6;
+  color: #17241e;
+  background: #d9c7a6 !important;
 }
